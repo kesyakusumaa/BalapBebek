@@ -156,53 +156,69 @@ function setupUIListeners() {
 }
 
 async function handleLogin() {
-    const coupon = elements.couponInput.value.trim();
-    const playerId = elements.idInput.value.trim();
-    if (!coupon || !playerId) {
-        alert('Please enter both a Coupon Code and a Player ID.');
-        return;
+  const coupon   = elements.couponInput.value.trim();
+  const playerId = elements.idInput.value.trim();
+  if (!coupon || !playerId) {
+    alert('Please enter both a Coupon Code and a Player ID.');
+    return;
+  }
+
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxaSTYLMdGZISzd-k9DlqZJnw6woN_fqnnQ8DUEmamuZ77UvyvwKJa946NOh0gzDV8XlQ/exec';
+
+  elements.submitBtn.disabled = true;
+  elements.submitBtn.textContent = 'Verifying...';
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
+
+  try {
+    const body = new URLSearchParams({
+      action: 'checkCoupon',
+      kupon: coupon,
+      id: playerId,
+    }).toString();
+
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'cors',
+      cache: 'no-store',
+      signal: controller.signal,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+      body
+    });
+
+    const txt = await res.text();       // ambil teks mentah dulu
+    let result;
+    try { result = JSON.parse(txt); }   // pastikan JSON sungguhan
+    catch { throw new Error('Non-JSON response: ' + txt.slice(0,120)); }
+
+    if (result.status === 'valid') {
+      state.coupon = coupon;
+      state.playerId = playerId;
+      state.sheetRow = result.row;
+      elements.loginScreen.classList.add('hidden');
+      elements.selectionScreen.classList.remove('hidden');
+    } else if (result.status === 'used') {
+      alert('This coupon has already been used.');
+    } else if (result.status === 'invalid') {
+      alert('Invalid Coupon or Player ID. Please check and try again.');
+    } else {
+      alert('Server error: ' + (result.message || 'unknown'));
     }
-    // --- Google Sheet Validation ---
-    // IMPORTANT: Replace this with your actual Google Apps Script web app URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxaSTYLMdGZISzd-k9DlqZJnw6woN_fqnnQ8DUEmamuZ77UvyvwKJa946NOh0gzDV8XlQ/exec"; 
-    elements.submitBtn.disabled = true;
-    elements.submitBtn.textContent = 'Verifying...';
-    try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'cors',
-            // Google Apps Script requires the body to be a string, not a formal JSON object
-            body: JSON.stringify({
-                action: 'checkCoupon',
-                kupon: coupon,
-                id: playerId,
-            }),
-            headers: {
-                // The header can be tricky, text/plain is often most reliable with doGet/doPost
-                'Content-Type': 'text/plain;charset=utf-8', 
-            }
-        });
-        const result = await response.json();
-        if (result.status === 'valid') {
-            state.coupon = coupon;
-            state.playerId = playerId;
-            state.sheetRow = result.row; // Save the row for updating the sheet later
-            elements.loginScreen.classList.add('hidden');
-            elements.selectionScreen.classList.remove('hidden');
-        } else if (result.status === 'used') {
-            alert('This coupon has already been used.');
-        } else { // Covers 'invalid' and any other error status
-            alert('Invalid Coupon or Player ID. Please check and try again.');
-        }
-    } catch (error) {
-        console.error('Error validating coupon:', error);
-        alert('Could not connect to the validation service. Please try again later.');
-    } finally {
-        // Re-enable the button
-        elements.submitBtn.disabled = false;
-        elements.submitBtn.textContent = 'Enter Arena';
-    }
+  } catch (err) {
+    console.error('Validation error:', err);
+    alert(
+      err.name === 'AbortError'
+        ? 'Validation timed out. Please try again.'
+        : 'Could not connect to the validation service. Please try again later.'
+    );
+  } finally {
+    clearTimeout(timeout);
+    elements.submitBtn.disabled = false;
+    elements.submitBtn.textContent = 'Enter Arena';
+  }
 }
+
 
 function handleSelectChicken(event) {
     const selectedCard = event.currentTarget;
