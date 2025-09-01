@@ -185,6 +185,8 @@ async function handleLogin() {
     const raw = await res.text();
     console.log('[RAW]', raw);
     const result = JSON.parse(raw);
+    console.log('[RESULT]', result);
+    alert('DEBUG: ' + JSON.stringify(result));
 
     if (result.status === 'valid') {
       state.coupon = coupon;
