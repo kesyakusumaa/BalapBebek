@@ -1,0 +1,220 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Virtual Cockfight Arena</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://esm.sh/three@0.160.0?dev",
+        "three/": "https://esm.sh/three@0.160.0&dev/"
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&family=Teko:wght@600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red-color: #D32F2F;
+      --blue-color: #1976D2;
+      --gold-color: #FFC107;
+      --dark-bg: #121212;
+      --light-bg: #212121;
+      --text-color: #E0E0E0;
+    }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: var(--dark-bg);
+      font-family: 'Roboto', sans-serif;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    .screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(18, 18, 18, 0.8);
+      backdrop-filter: blur(10px);
+      z-index: 10;
+      transition: opacity 0.5s ease-out;
+    }
+    .screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .container {
+      background: var(--light-bg);
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    h1, h2 {
+      font-family: 'Teko', sans-serif;
+      letter-spacing: 1px;
+      margin: 0 0 20px 0;
+    }
+    h1 { font-size: 3rem; }
+    h2 { font-size: 2.5rem; }
+    p { margin: 0 0 20px 0; color: #BDBDBD; }
+    input {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: 1px solid #424242;
+      background: #333;
+      color: var(--text-color);
+      font-size: 1rem;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    input:focus {
+      outline: none;
+      border-color: var(--gold-color);
+    }
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border-radius: 8px;
+      border: none;
+      background: var(--gold-color);
+      color: #000;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+    }
+    .chicken-selection {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+    .chicken-card {
+      padding: 20px;
+      border-radius: 12px;
+      flex: 1;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid transparent;
+    }
+    .chicken-card h3 {
+      font-family: 'Teko', sans-serif;
+      font-size: 2rem;
+      margin: 0;
+    }
+    .chicken-card.red {
+      background: linear-gradient(145deg, #480f0f, #8e1c1c);
+      color: #fff;
+    }
+     .chicken-card.blue {
+      background: linear-gradient(145deg, #0d2744, #1a4d86);
+      color: #fff;
+    }
+    .chicken-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    }
+    .chicken-card.selected {
+      border-color: var(--gold-color);
+      box-shadow: 0 0 20px rgba(255, 193, 7, 0.5);
+    }
+    #arena-screen {
+      justify-content: flex-start;
+      padding-top: 20px;
+      z-index: 5;
+    }
+    .arena-ui {
+      position: relative;
+      width: 100%;
+      text-align: center;
+    }
+    .round-info {
+      background: rgba(0,0,0,0.6);
+      display: inline-block;
+      padding: 10px 30px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .status-text {
+        margin-top: 20px;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+    .status-text .red-text { color: var(--red-color); }
+    .status-text .blue-text { color: var(--blue-color); }
+  </style>
+</head>
+<body>
+  <!-- Coupon and ID Entry Screen -->
+  <div id="login-screen" class="screen">
+    <div class="container">
+      <h1>ARENA ACCESS</h1>
+      <p>Enter your Coupon Code and Player ID to join the match.</p>
+      <input type="text" id="coupon-code" placeholder="COUPON CODE">
+      <input type="text" id="player-id" placeholder="PLAYER ID">
+      <button id="submit-id" class="btn">Enter Arena</button>
+    </div>
+  </div>
+  <!-- Chicken Selection Screen -->
+  <div id="selection-screen" class="screen hidden">
+    <div class="container" style="max-width: 600px;">
+      <h2>CHOOSE YOUR FIGHTER</h2>
+      <p>Select your champion for the upcoming round.</p>
+      <div class="chicken-selection">
+        <div class="chicken-card red" data-choice="red">
+          <h3>RED</h3>
+        </div>
+        <div class="chicken-card blue" data-choice="blue">
+          <h3>BLUE</h3>
+        </div>
+      </div>
+      <button id="start-fight" class="btn" style="margin-top: 30px;">Start Fight</button>
+    </div>
+  </div>
+  
+  <!-- Main Arena Screen (Background for 3D content) -->
+  <div id="arena-screen" class="screen hidden">
+      <div class="arena-ui">
+          <div class="round-info">
+              <h2>ROUND 1</h2>
+          </div>
+          <div id="fight-status" class="status-text">
+              The fight is about to begin...
+          </div>
+      </div>
+  </div>
+  <canvas id="game-canvas"></canvas>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

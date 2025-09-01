@@ -1,2 +1,0 @@
-# VirtualCockfightArena
-Virtual Cockfight Arena
