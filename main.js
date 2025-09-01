@@ -164,7 +164,7 @@ async function handleLogin() {
     }
     // --- Google Sheet Validation ---
     // IMPORTANT: Replace this with your actual Google Apps Script web app URL
-    const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxaSTYLMdGZISzd-k9DlqZJnw6woN_fqnnQ8DUEmamuZ77UvyvwKJa946NOh0gzDV8XlQ/exec"; 
     elements.submitBtn.disabled = true;
     elements.submitBtn.textContent = 'Verifying...';
     try {
