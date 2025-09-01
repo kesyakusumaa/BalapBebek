@@ -156,64 +156,38 @@ function setupUIListeners() {
 }
 
 async function handleLogin() {
-  const coupon   = elements.couponInput.value.trim();
+  const coupon = elements.couponInput.value.trim();
   const playerId = elements.idInput.value.trim();
-  if (!coupon || !playerId) {
-    alert('Please enter both a Coupon Code and a Player ID.');
-    return;
-  }
+  if (!coupon || !playerId) { alert('Please enter both a Coupon Code and a Player ID.'); return; }
 
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxaSTYLMdGZISzd-k9DlqZJnw6woN_fqnnQ8DUEmamuZ77UvyvwKJa946NOh0gzDV8XlQ/exec';
 
   elements.submitBtn.disabled = true;
   elements.submitBtn.textContent = 'Verifying...';
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12000);
-
   try {
-    const body = new URLSearchParams({
-      action: 'checkCoupon',
-      kupon: coupon,
-      id: playerId,
-    }).toString();
+    const qs = new URLSearchParams({ action:'checkCoupon', kupon:coupon, id:playerId }).toString();
+    const url = `${SCRIPT_URL}?${qs}`;
+    console.log('[VALIDATING]', url); // <-- untuk verifikasi
 
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'cors',
-      cache: 'no-store',
-      signal: controller.signal,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-      body
-    });
-
-    const txt = await res.text();       // ambil teks mentah dulu
-    let result;
-    try { result = JSON.parse(txt); }   // pastikan JSON sungguhan
-    catch { throw new Error('Non-JSON response: ' + txt.slice(0,120)); }
+    const res = await fetch(url, { method:'GET', mode:'cors', cache:'no-store' });
+    const raw = await res.text();
+    console.log('[RAW]', raw); // <-- lihat isi sebenarnya
+    const result = JSON.parse(raw);
 
     if (result.status === 'valid') {
-      state.coupon = coupon;
-      state.playerId = playerId;
-      state.sheetRow = result.row;
+      state.coupon = coupon; state.playerId = playerId; state.sheetRow = result.row;
       elements.loginScreen.classList.add('hidden');
       elements.selectionScreen.classList.remove('hidden');
     } else if (result.status === 'used') {
       alert('This coupon has already been used.');
-    } else if (result.status === 'invalid') {
-      alert('Invalid Coupon or Player ID. Please check and try again.');
     } else {
-      alert('Server error: ' + (result.message || 'unknown'));
+      alert('Invalid Coupon or Player ID. Please check and try again.');
     }
   } catch (err) {
-    console.error('Validation error:', err);
-    alert(
-      err.name === 'AbortError'
-        ? 'Validation timed out. Please try again.'
-        : 'Could not connect to the validation service. Please try again later.'
-    );
+    console.error('Validation failed:', err);
+    alert('Could not connect to the validation service. Please try again later.');
   } finally {
-    clearTimeout(timeout);
     elements.submitBtn.disabled = false;
     elements.submitBtn.textContent = 'Enter Arena';
   }
