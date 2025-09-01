@@ -155,10 +155,21 @@ function setupUIListeners() {
     elements.startFightBtn.addEventListener('click', handleStartFight);
 }
 
+function sanitize(s) {
+  return s
+    .normalize('NFKC')          // samakan bentuk huruf
+    .replace(/\s+/g, '')        // hapus semua spasi (termasuk NBSP)
+    .toUpperCase();
+}
+
 async function handleLogin() {
-  const coupon = elements.couponInput.value.trim();
-  const playerId = elements.idInput.value.trim();
-  if (!coupon || !playerId) { alert('Please enter both a Coupon Code and a Player ID.'); return; }
+  const rawCoupon = elements.couponInput.value;
+  const rawPlayer = elements.idInput.value;
+  if (!rawCoupon || !rawPlayer) { alert('Please enter both a Coupon Code and a Player ID.'); return; }
+
+  // sanitize
+  const coupon = sanitize(rawCoupon);
+  const playerId = sanitize(rawPlayer);
 
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxaSTYLMdGZISzd-k9DlqZJnw6woN_fqnnQ8DUEmamuZ77UvyvwKJa946NOh0gzDV8XlQ/exec';
 
@@ -168,15 +179,17 @@ async function handleLogin() {
   try {
     const qs = new URLSearchParams({ action:'checkCoupon', kupon:coupon, id:playerId }).toString();
     const url = `${SCRIPT_URL}?${qs}`;
-    console.log('[VALIDATING]', url); // <-- untuk verifikasi
+    console.log('[VALIDATING]', url);
 
     const res = await fetch(url, { method:'GET', mode:'cors', cache:'no-store' });
     const raw = await res.text();
-    console.log('[RAW]', raw); // <-- lihat isi sebenarnya
+    console.log('[RAW]', raw);
     const result = JSON.parse(raw);
 
     if (result.status === 'valid') {
-      state.coupon = coupon; state.playerId = playerId; state.sheetRow = result.row;
+      state.coupon = coupon;
+      state.playerId = playerId;
+      state.sheetRow = result.row;
       elements.loginScreen.classList.add('hidden');
       elements.selectionScreen.classList.remove('hidden');
     } else if (result.status === 'used') {
@@ -192,6 +205,7 @@ async function handleLogin() {
     elements.submitBtn.textContent = 'Enter Arena';
   }
 }
+
 
 
 function handleSelectChicken(event) {
