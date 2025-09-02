@@ -1,220 +1,296 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Virtual Cockfight Arena</title>
-  <script type="importmap">
-{
-  "imports": {
-    "three": "https://esm.sh/three@0.160.0?dev",
-    "three/addons/": "https://esm.sh/three@0.160.0?dev/examples/jsm/"
-  }
-}
-</script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&family=Teko:wght@600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Virtual Cockfighting Game - Enhanced Effects</title>
   <style>
-    :root {
-      --red-color: #D32F2F;
-      --blue-color: #1976D2;
-      --gold-color: #FFC107;
-      --dark-bg: #121212;
-      --light-bg: #212121;
-      --text-color: #E0E0E0;
-    }
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: var(--dark-bg);
-      font-family: 'Roboto', sans-serif;
-      color: var(--text-color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-    }
-    .screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: rgba(18, 18, 18, 0.8);
-      backdrop-filter: blur(10px);
-      z-index: 10;
-      transition: opacity 0.5s ease-out;
-    }
-    .screen.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-    .container {
-      background: var(--light-bg);
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      text-align: center;
-      max-width: 400px;
-      width: 90%;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    h1, h2 {
-      font-family: 'Teko', sans-serif;
-      letter-spacing: 1px;
-      margin: 0 0 20px 0;
-    }
-    h1 { font-size: 3rem; }
-    h2 { font-size: 2.5rem; }
-    p { margin: 0 0 20px 0; color: #BDBDBD; }
-    input {
-      width: 100%;
-      padding: 12px 15px;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      border: 1px solid #424242;
-      background: #333;
-      color: var(--text-color);
-      font-size: 1rem;
-      box-sizing: border-box;
+    body { margin: 0; overflow: hidden; background: #222; }
+    #ui {
+      position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 10; background: rgba(0,0,0,0.7); color: #fff; padding: 20px; border-radius: 10px;
       text-align: center;
     }
-    input:focus {
-      outline: none;
-      border-color: var(--gold-color);
-    }
-    .btn {
-      width: 100%;
-      padding: 15px;
-      border-radius: 8px;
-      border: none;
-      background: var(--gold-color);
-      color: #000;
-      font-size: 1.1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
-    }
-    .chicken-selection {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-    }
-    .chicken-card {
-      padding: 20px;
-      border-radius: 12px;
-      flex: 1;
-      cursor: pointer;
-      transition: all 0.3s ease;
+    .btn { margin: 10px; padding: 10px 20px; font-size: 18px; border: none; border-radius: 5px; cursor: pointer;}
+    .btn-blue { background: #2980f2; color: #fff; }
+    .btn-red { background: #e74c3c; color: #fff; }
+    .health-bar {
+      width: 120px; height: 18px; background: #444; border-radius: 8px; overflow: hidden;
+      margin: 8px auto;
+      box-shadow: 0 0 6px #000;
       position: relative;
-      overflow: hidden;
-      border: 2px solid transparent;
     }
-    .chicken-card h3 {
-      font-family: 'Teko', sans-serif;
-      font-size: 2rem;
-      margin: 0;
+    .health-fill {
+      height: 100%; border-radius: 8px;
+      transition: width 0.4s, background 0.2s;
     }
-    .chicken-card.red {
-      background: linear-gradient(145deg, #480f0f, #8e1c1c);
-      color: #fff;
+    .flash { animation: flash 0.3s; }
+    @keyframes flash {
+      0% { background: #ff0000; }
+      100% { background: inherit; }
     }
-     .chicken-card.blue {
-      background: linear-gradient(145deg, #0d2744, #1a4d86);
-      color: #fff;
+    #result {
+      font-size: 2em; color: yellow; margin-top: 20px;
+      text-shadow: 2px 2px 8px #000;
     }
-    .chicken-card:hover {
-      transform: scale(1.05);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
-    }
-    .chicken-card.selected {
-      border-color: var(--gold-color);
-      box-shadow: 0 0 20px rgba(255, 193, 7, 0.5);
-    }
-    #arena-screen {
-      justify-content: flex-start;
-      padding-top: 20px;
-      z-index: 5;
-    }
-    .arena-ui {
-      position: relative;
-      width: 100%;
-      text-align: center;
-    }
-    .round-info {
-      background: rgba(0,0,0,0.6);
-      display: inline-block;
-      padding: 10px 30px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-    .status-text {
-        margin-top: 20px;
-        font-size: 1.5rem;
-        font-weight: 700;
-    }
-    .status-text .red-text { color: var(--red-color); }
-    .status-text .blue-text { color: var(--blue-color); }
   </style>
 </head>
 <body>
-  <!-- Coupon and ID Entry Screen -->
-  <div id="login-screen" class="screen">
-    <div class="container">
-      <h1>ARENA ACCESS</h1>
-      <p>Enter your Coupon Code and Player ID to join the match.</p>
-      <input type="text" id="coupon-code" placeholder="COUPON CODE">
-      <input type="text" id="player-id" placeholder="PLAYER ID">
-      <button id="submit-id" class="btn">Enter Arena</button>
+<div id="ui">
+  <div id="choose">
+    <h2>Choose Your Chicken</h2>
+    <button class="btn btn-blue" onclick="selectChicken('blue')">Blue Chicken</button>
+    <button class="btn btn-red" onclick="selectChicken('red')">Red Chicken</button>
+  </div>
+  <div id="fightui" style="display:none;">
+    <div>
+      <span>Blue Chicken</span>
+      <div class="health-bar"><div class="health-fill" id="blueHealth" style="background:#2980f2;width:100%"></div></div>
     </div>
-  </div>
-  <!-- Chicken Selection Screen -->
-  <div id="selection-screen" class="screen hidden">
-    <div class="container" style="max-width: 600px;">
-      <h2>CHOOSE YOUR FIGHTER</h2>
-      <p>Select your champion for the upcoming round.</p>
-      <div class="chicken-selection">
-        <div class="chicken-card red" data-choice="red">
-          <h3>RED</h3>
-        </div>
-        <div class="chicken-card blue" data-choice="blue">
-          <h3>BLUE</h3>
-        </div>
-      </div>
-      <button id="start-fight" class="btn" style="margin-top: 30px;">Start Fight</button>
+    <div>
+      <span>Red Chicken</span>
+      <div class="health-bar"><div class="health-fill" id="redHealth" style="background:#e74c3c;width:100%"></div></div>
     </div>
+    <div id="result"></div>
   </div>
-  
-  <!-- Main Arena Screen (Background for 3D content) -->
-  <div id="arena-screen" class="screen hidden">
-      <div class="arena-ui">
-          <div class="round-info">
-              <h2>ROUND 1</h2>
-          </div>
-          <div id="fight-status" class="status-text">
-              The fight is about to begin...
-          </div>
-      </div>
-  </div>
-  <canvas id="game-canvas"></canvas>
-  <script type="module" src="./main.js?v=7"></script>
+</div>
+<canvas id="game"></canvas>
+<script src="https://unpkg.com/three@0.148.0/build/three.min.js"></script>
+<script>
+let selected = null, fighting = false;
+let blueHealth = 100, redHealth = 100;
+let blueObj, redObj, scene, camera, renderer, animID;
+const canvas = document.getElementById('game');
+let shakeTimeout = null;
+
+function selectChicken(color) {
+  selected = color;
+  document.getElementById('choose').style.display = 'none';
+  document.getElementById('fightui').style.display = '';
+  startGame();
+}
+
+function startGame() {
+  // 3D Scene setup
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera.position.set(0, 3, 10);
+  renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  // Arena
+  const floor = new THREE.Mesh(
+    new THREE.CircleGeometry(6, 32),
+    new THREE.MeshStandardMaterial({color:0xaaaa88, roughness:0.7})
+  );
+  floor.rotation.x = -Math.PI/2;
+  scene.add(floor);
+
+  // Lighting
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(5,10,7);
+  scene.add(light);
+  scene.add(new THREE.AmbientLight(0x999999));
+
+  // Chickens (replace with models if available)
+  const blueMat = new THREE.MeshStandardMaterial({color:0x2980f2});
+  const redMat = new THREE.MeshStandardMaterial({color:0xe74c3c});
+
+  blueObj = new THREE.Mesh(new THREE.BoxGeometry(1,1.5,1), blueMat);
+  blueObj.position.set(-2,0.75,0);
+
+  const blueScarf = new THREE.Mesh(new THREE.TorusGeometry(0.55,0.12,16,32), 
+    new THREE.MeshStandardMaterial({color:0x0a5eea}));
+  blueScarf.position.set(0,0.7,0);
+  blueScarf.rotation.x = Math.PI/2;
+  blueObj.add(blueScarf);
+
+  redObj = new THREE.Mesh(new THREE.BoxGeometry(1,1.5,1), redMat);
+  redObj.position.set(2,0.75,0);
+
+  const redScarf = new THREE.Mesh(new THREE.TorusGeometry(0.55,0.12,16,32), 
+    new THREE.MeshStandardMaterial({color:0xc21818}));
+  redScarf.position.set(0,0.7,0);
+  redScarf.rotation.x = Math.PI/2;
+  redObj.add(redScarf);
+
+  scene.add(blueObj); scene.add(redObj);
+
+  fighting = true;
+  blueHealth = 100; redHealth = 100;
+  updateHealth();
+  animate();
+  setTimeout(fightTurn, 1200);
+}
+
+function animate() {
+  animID = requestAnimationFrame(animate);
+  blueObj.rotation.y += 0.01;
+  redObj.rotation.y -= 0.01;
+  renderer.render(scene, camera);
+}
+
+function fightTurn() {
+  if (!fighting) return;
+  let attacker, defender, attackerObj, defenderObj;
+  if (Math.random() > 0.5) {
+    attacker = 'blue'; defender = 'red';
+    attackerObj = blueObj; defenderObj = redObj;
+  } else {
+    attacker = 'red'; defender = 'blue';
+    attackerObj = redObj; defenderObj = blueObj;
+  }
+
+  let origZ = attackerObj.position.z;
+  let origY = attackerObj.position.y;
+  // Lunge and shake
+  attackerObj.position.z -= 0.7;
+  shakeObject(attackerObj, 100, 0.15);
+  setTimeout(()=>{
+    attackerObj.position.z = origZ;
+    // Damage
+    let dmg = Math.floor(Math.random()*20+15);
+    if (defender === 'red') redHealth -= dmg;
+    else blueHealth -= dmg;
+    showBlood(defenderObj, dmg, true);
+    updateHealth(defender);
+
+    // Health bar flash
+    let healthBarId = defender === 'red' ? 'redHealth' : 'blueHealth';
+    let bar = document.getElementById(healthBarId);
+    bar.classList.add('flash');
+    setTimeout(()=>bar.classList.remove('flash'), 300);
+
+    // Screen shake effect
+    screenShake(200, 10);
+
+    // Dramatic death if health below zero
+    checkWinner();
+    if (fighting) setTimeout(fightTurn, 900);
+  }, 340);
+}
+
+function shakeObject(obj, duration, magnitude) {
+  let time = 0;
+  let shakeInt = setInterval(() => {
+    obj.position.x += (Math.random()-0.5)*magnitude;
+    obj.position.y += (Math.random()-0.5)*magnitude;
+    time += 20;
+    if (time >= duration) {
+      obj.position.x = Math.round(obj.position.x);
+      obj.position.y = Math.round(obj.position.y);
+      clearInterval(shakeInt);
+    }
+  }, 20);
+}
+
+function screenShake(duration, magnitude) {
+  let time = 0;
+  let origStyle = canvas.style.transform;
+  if (shakeTimeout) clearTimeout(shakeTimeout);
+  let shakeInt = setInterval(() => {
+    canvas.style.transform = `translate(${(Math.random()-0.5)*magnitude}px, ${(Math.random()-0.5)*magnitude}px)`;
+    time += 20;
+    if (time >= duration) {
+      clearInterval(shakeInt);
+      canvas.style.transform = origStyle;
+    }
+  }, 20);
+  shakeTimeout = setTimeout(()=>{canvas.style.transform = origStyle;}, duration+20);
+}
+
+function showBlood(obj, amount, splatter) {
+  for (let i=0; i<Math.floor(amount/10); i++) {
+    const blood = new THREE.Mesh(
+      new THREE.SphereGeometry(0.07, 8, 8),
+      new THREE.MeshStandardMaterial({color:0xb80000, roughness:0.7, transparent:true, opacity:0.8})
+    );
+    blood.position.copy(obj.position);
+    blood.position.x += (Math.random()-0.5)*0.6;
+    blood.position.y += (Math.random())*1.1;
+    blood.position.z += (Math.random()-0.5)*0.2;
+    scene.add(blood);
+    setTimeout(()=>scene.remove(blood), 1200);
+    // Splatter effect: "throw" blood up
+    if (splatter) {
+      let upward = (Math.random()*0.5)+0.2;
+      let bloodInt = setInterval(()=> {
+        blood.position.y += upward;
+        upward -= 0.05;
+        if (upward <= 0) clearInterval(bloodInt);
+      }, 60);
+    }
+  }
+}
+
+function updateHealth(damaged) {
+  document.getElementById('blueHealth').style.width = Math.max(0, blueHealth) + '%';
+  document.getElementById('redHealth').style.width = Math.max(0, redHealth) + '%';
+}
+
+function checkWinner() {
+  if (redHealth <= 0 || blueHealth <= 0) {
+    fighting = false;
+    cancelAnimationFrame(animID);
+    let winner, loserObj, winnerObj;
+    if (redHealth > blueHealth) {
+      winner = "Red Chicken Wins!";
+      loserObj = blueObj; winnerObj = redObj;
+    } else if (blueHealth > redHealth) {
+      winner = "Blue Chicken Wins!";
+      loserObj = redObj; winnerObj = blueObj;
+    } else {
+      winner = "It's a Draw!";
+    }
+    document.getElementById('result').innerText = winner;
+    // Death effect
+    if (loserObj) chickenDeath(loserObj);
+    if (winnerObj) chickenVictory(winnerObj);
+    setTimeout(()=>location.reload(), 4000); // restart game
+  }
+}
+
+function chickenDeath(obj) {
+  // Rotate and fade
+  let rot = 0;
+  let fade = 1;
+  let deathInt = setInterval(()=>{
+    rot += 0.08;
+    obj.rotation.z = rot;
+    fade -= 0.04;
+    obj.material.opacity = Math.max(fade, 0);
+    obj.material.transparent = true;
+    if (fade <= 0) {
+      clearInterval(deathInt);
+      obj.visible = false;
+    }
+  }, 60);
+}
+
+function chickenVictory(obj) {
+  // Victory dance: bounce up and down
+  let up = true;
+  let danceCount = 0;
+  let origY = obj.position.y;
+  let danceInt = setInterval(()=>{
+    if (up) obj.position.y += 0.15;
+    else obj.position.y -= 0.15;
+    up = !up;
+    danceCount++;
+    if (danceCount > 8) {
+      obj.position.y = origY;
+      clearInterval(danceInt);
+    }
+  }, 120);
+}
+
+// Responsive canvas
+window.addEventListener('resize', ()=>{
+  if (renderer && camera) {
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+});
+</script>
 </body>
 </html>
