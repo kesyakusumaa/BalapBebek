@@ -32,11 +32,10 @@
     --card:#ffffffd9;
     --shadow: 0 10px 30px rgba(0,0,0,.18);
   }
-
   *{box-sizing:border-box}
   body{
     margin:0;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans";
     color:var(--text);
     background:
       radial-gradient(1200px 600px at 50% -10%, #ffffff 0%, transparent 60%) ,
@@ -47,11 +46,7 @@
     justify-content:center;
     padding:24px;
   }
-
-  .app{
-    width:min(1200px, 96vw);
-  }
-
+  .app{ width:min(1200px, 96vw); }
   .card{
     background:var(--card);
     backdrop-filter: blur(6px);
@@ -59,295 +54,132 @@
     box-shadow: var(--shadow);
     padding:18px 18px 24px;
   }
-
   header{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    padding:6px 6px 14px;
+    display:flex; align-items:center; gap:14px; padding:6px 6px 14px;
   }
-  header h1{
-    margin:0;
-    font-weight:800;
-    letter-spacing:.2px;
-    font-size: clamp(18px, 2.4vw, 26px);
-  }
+  header h1{ margin:0; font-weight:800; letter-spacing:.2px; font-size: clamp(18px, 2.4vw, 26px); }
   header .badge{
-    font-size:12px;
-    padding:6px 10px;
-    border-radius:999px;
-    background:#0a6efd14;
-    border:1px solid #0a6efd33;
-    color:#084298;
-    font-weight:600;
+    font-size:12px; padding:6px 10px; border-radius:999px;
+    background:#0a6efd14; border:1px solid #0a6efd33; color:#084298; font-weight:600;
   }
-
   .controls{
-    display:flex;
-    flex-wrap:wrap;
-    align-items:center;
-    gap:10px;
-    margin-bottom:12px;
+    display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:12px;
   }
   button{
-    appearance:none;
-    border:none;
-    border-radius:12px;
-    padding:12px 16px;
-    font-weight:700;
-    cursor:pointer;
-    background:var(--accent);
-    color:white;
+    appearance:none; border:none; border-radius:12px; padding:12px 16px;
+    font-weight:700; cursor:pointer; background:var(--accent); color:white;
     box-shadow: 0 6px 16px rgba(10,110,253,.25);
     transition: transform .06s ease, filter .2s ease, opacity .2s ease;
   }
   button:hover{ filter:brightness(1.08) }
   button:active{ transform: translateY(1px) }
   button.secondary{
-    background:#11182710;
-    color:#0b1a2a;
-    border:1px solid #11182720;
-    box-shadow:none;
+    background:#11182710; color:#0b1a2a; border:1px solid #11182720; box-shadow:none;
   }
-  button:disabled{
-    opacity:.55;
-    cursor:not-allowed;
-    transform:none;
+  button.ghost{
+    background:#ffffffaa; color:#0b1a2a; border:1px solid #11182720; box-shadow:none;
   }
+  button:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
   .status{
-    margin-left:auto;
-    font-weight:700;
-    background:#11182708;
-    border:1px solid #11182720;
-    color:#0b1a2a;
-    padding:10px 12px;
-    border-radius:10px;
-    min-width:160px;
-    text-align:center;
+    margin-left:auto; font-weight:700; background:#11182708; border:1px solid #11182720;
+    color:#0b1a2a; padding:10px 12px; border-radius:10px; min-width:160px; text-align:center;
   }
 
   .stage{
-    position:relative;
-    width:100%;
+    position:relative; width:100%;
     height: calc(var(--river-h) + var(--bank-h) * 2 + 12px);
-    overflow:hidden;
-    border-radius:18px;
-    border:1px solid #ffffff80;
+    overflow:hidden; border-radius:18px; border:1px solid #ffffff80;
     background: linear-gradient(#e3f4ff, #d9eeff) no-repeat;
   }
 
-  /* Banks (top & bottom) with scenery */
+  /* Banks */
   .bank{
-    position:absolute;
-    left:0; right:0;
-    height:var(--bank-h);
+    position:absolute; left:0; right:0; height:var(--bank-h);
     background:
       radial-gradient(180px 40px at 10% 60%, #ffffff80, transparent 60%),
       linear-gradient(180deg, var(--bank) 0%, var(--bank-edge) 100%);
-    z-index:2;
-    display:flex;
-    align-items:flex-end;
-    padding:0 10px 8px;
-    gap:12px;
+    z-index:2; display:flex; align-items:flex-end; padding:0 10px 8px; gap:12px;
   }
   .bank.top{ top:0; align-items:flex-start; padding:8px 10px 0; }
-  .bank .scenery{
-    display:flex;
-    gap:12px;
-    flex-wrap:nowrap;
-    width:100%;
-    justify-content:space-between;
-    opacity:.95;
-    filter: drop-shadow(0 2px 0 rgba(0,0,0,.12));
-  }
-  .tree{
-    width:36px; height:46px; position:relative;
-    animation: sway 3.5s ease-in-out infinite;
-    transform-origin: bottom center;
-  }
-  .tree .trunk{
-    position:absolute; bottom:0; left:50%; transform:translateX(-50%);
-    width:8px; height:18px; background:var(--trunk); border-radius:3px;
-  }
-  .tree .crown{
-    position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
-    width:34px; height:28px; background:var(--tree); border-radius:50%;
-    box-shadow: 0 -10px 0 6px #34903a inset;
-  }
-  .rock{
-    width:32px; height:20px;
-    background:var(--rock);
-    border-radius: 40% 60% 45% 55% / 65% 60% 40% 50%;
-    transform: rotate(-6deg);
-    filter: brightness(.95);
-    animation: breathe 4s ease-in-out infinite;
-  }
-  @keyframes sway{
-    0%,100%{ transform: rotate(0deg) }
-    50%{ transform: rotate(-2deg) }
-  }
-  @keyframes breathe{
-    0%,100%{ transform: translateY(0) rotate(-6deg) }
-    50%{ transform: translateY(-1px) rotate(-7deg) }
-  }
+  .bank .scenery{ display:flex; gap:12px; width:100%; justify-content:space-between; opacity:.95;
+    filter: drop-shadow(0 2px 0 rgba(0,0,0,.12)); }
+  .tree{ width:36px; height:46px; position:relative; animation: sway 3.5s ease-in-out infinite; transform-origin: bottom center; }
+  .tree .trunk{ position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:8px; height:18px; background:var(--trunk); border-radius:3px; }
+  .tree .crown{ position:absolute; bottom:10px; left:50%; transform:translateX(-50%); width:34px; height:28px; background:var(--tree); border-radius:50%; box-shadow: 0 -10px 0 6px #34903a inset; }
+  .rock{ width:32px; height:20px; background:var(--rock); border-radius: 40% 60% 45% 55% / 65% 60% 40% 50%; transform: rotate(-6deg); filter: brightness(.95); animation: breathe 4s ease-in-out infinite; }
+  @keyframes sway{ 0%,100%{ transform: rotate(0deg) } 50%{ transform: rotate(-2deg) } }
+  @keyframes breathe{ 0%,100%{ transform: translateY(0) rotate(-6deg) } 50%{ transform: translateY(-1px) rotate(-7deg) } }
 
   /* River */
-  .river{
-    position:absolute;
-    top:var(--bank-h);
-    left:0; right:0;
-    height:var(--river-h);
-    background:
-      linear-gradient(180deg, var(--water-1), var(--water-2));
-    overflow:hidden;
-  }
-
-  /* Subtle water waves & ripples (two moving layers) */
-  .river::before,
-  .river::after{
-    content:"";
-    position:absolute; inset:0;
-    background-repeat: repeat;
-    pointer-events:none;
-  }
-  /* Wide, slow sine-like stripes */
+  .river{ position:absolute; top:var(--bank-h); left:0; right:0; height:var(--river-h);
+    background: linear-gradient(180deg, var(--water-1), var(--water-2)); overflow:hidden; }
+  .river::before, .river::after{ content:""; position:absolute; inset:0; background-repeat: repeat; pointer-events:none; }
   .river::before{
-    background-image:
-      repeating-linear-gradient( to right,
-        transparent 0 80px,
-        var(--wave) 80px 84px,
-        transparent 84px 170px
-      );
+    background-image: repeating-linear-gradient( to right, transparent 0 80px, var(--wave) 80px 84px, transparent 84px 170px );
     animation: drift 9s linear infinite;
   }
-  /* Soft circular ripples */
   .river::after{
     background-image:
       radial-gradient(10px 6px at 10% 30%, #ffffff50 0 20%, transparent 21%),
       radial-gradient(8px 5px at 30% 70%, #ffffff45 0 20%, transparent 21%),
       radial-gradient(9px 6px at 55% 40%, #ffffff40 0 20%, transparent 21%),
       radial-gradient(10px 6px at 80% 65%, #ffffff35 0 20%, transparent 21%);
-    animation: ripple 6s ease-in-out infinite;
-    opacity:.6;
+    animation: ripple 6s ease-in-out infinite; opacity:.6;
   }
-  @keyframes drift{
-    from{ background-position: 0 0 }
-    to{ background-position: 260px 0 }
-  }
-  @keyframes ripple{
-    0%,100%{ transform: translateX(0) translateY(0) }
-    50%{ transform: translateX(-20px) translateY(2px) }
-  }
+  @keyframes drift{ from{ background-position: 0 0 } to{ background-position: 260px 0 } }
+  @keyframes ripple{ 0%,100%{ transform: translateX(0) translateY(0) } 50%{ transform: translateX(-20px) translateY(2px) } }
 
-  /* Lanes & finish line */
-  .lanes{
-    position:absolute; inset:0;
-    padding: var(--pad);
-  }
-  .lane{
-    position:relative;
-    height: var(--lane-h);
-    border-bottom: 1px dashed var(--line);
-  }
+  /* Lanes & finish */
+  .lanes{ position:absolute; inset:0; padding: var(--pad); }
+  .lane{ position:relative; height: var(--lane-h); border-bottom: 1px dashed var(--line); }
   .lane:last-child{ border-bottom:none }
-
   .finish{
-    position:absolute;
-    top:var(--pad);
-    bottom:var(--pad);
-    right: calc(var(--pad) + 0px);
+    position:absolute; top:var(--pad); bottom:var(--pad); right: calc(var(--pad) + 0px);
     width:var(--finish-w);
     background:
       linear-gradient(90deg, #0000 0 45%, #0002 45% 55%, #0000 55% 100%),
-      repeating-linear-gradient(180deg,
-        var(--finish-light) 0 12px,
-        var(--finish-dark) 12px 24px);
-    border-left:1px solid #00000030;
-    border-right:1px solid #00000020;
-    z-index:4;
-    box-shadow: inset 0 0 0 1px #00000010;
+      repeating-linear-gradient(180deg, var(--finish-light) 0 12px, var(--finish-dark) 12px 24px);
+    border-left:1px solid #00000030; border-right:1px solid #00000020; z-index:4; box-shadow: inset 0 0 0 1px #00000010;
   }
 
   /* Ducks */
-  .duck{
-    --x: 0px;
-    position:absolute;
-    left: var(--pad);
-    top:0;
-    width:var(--duck-w);
-    height:var(--duck-h);
-    transform: translateX(var(--x));
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:3;
-  }
-  .duck .wake{
-    position:absolute;
-    left:-10px; right:6px; top:50%;
-    height: 10px;
-    transform: translateY(-50%);
-    background:
-      radial-gradient(10px 5px at right 50%, #ffffff55 0 50%, transparent 55%);
-    opacity:.5;
-    filter: blur(0.3px);
-    animation: wake 0.7s linear infinite;
-  }
-  @keyframes wake{
-    0%{ background-position: 0 0 }
-    100%{ background-position: 12px 0 }
-  }
-
-  .duck svg{
-    width:var(--duck-w);
-    height:var(--duck-h);
-    overflow:visible;
-    animation: bob 1.2s ease-in-out infinite;
-  }
-  @keyframes bob{
-    0%,100%{ transform: translateY(0) }
-    50%{ transform: translateY(3px) }
-  }
+  .duck{ --x: 0px; position:absolute; left: var(--pad); top:0; width:var(--duck-w); height:var(--duck-h); transform: translateX(var(--x)); display:flex; align-items:center; justify-content:center; z-index:3; }
+  .duck .wake{ position:absolute; left:-10px; right:6px; top:50%; height: 10px; transform: translateY(-50%); background: radial-gradient(10px 5px at right 50%, #ffffff55 0 50%, transparent 55%); opacity:.5; filter: blur(0.3px); animation: wake 0.7s linear infinite; }
+  @keyframes wake{ 0%{ background-position: 0 0 } 100%{ background-position: 12px 0 } }
+  .duck svg{ width:var(--duck-w); height:var(--duck-h); overflow:visible; animation: bob 1.2s ease-in-out infinite; }
+  @keyframes bob{ 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(3px) } }
 
   /* Lane numbers */
-  .lane .num{
-    position:absolute;
-    left:4px; top:6px;
-    font-size: 12px;
-    font-weight:800;
-    color:#083b6b80;
-    user-select:none;
-  }
+  .lane .num{ position:absolute; left:4px; top:6px; font-size: 12px; font-weight:800; color:#083b6b80; user-select:none; }
 
   /* Result banner */
-  .result{
-    margin-top:14px;
-    padding:12px 14px;
-    border-radius:12px;
-    background:#10b98118;
-    border:1px solid #10b98155;
-    color:#065f46;
-    font-weight:700;
-    display:none;
-  }
+  .result{ margin-top:14px; padding:12px 14px; border-radius:12px; background:#10b98118; border:1px solid #10b98155; color:#065f46; font-weight:700; display:none; }
   .result.show{ display:block }
 
-  /* Helper: small text */
-  .hint{
-    font-size:12px;
-    color:#0b1a2a99;
-    margin-left:6px;
-  }
+  .hint{ font-size:12px; color:#0b1a2a99; margin-left:6px; }
 
-  /* Responsive tweaks */
+  /* ===== Modal Ranking ===== */
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:50;
+  }
+  .modal{ background:white; width:min(560px, 92vw); border-radius:16px; box-shadow: var(--shadow); overflow:hidden; }
+  .modal header{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 16px; border-bottom:1px solid #e5e7eb;
+  }
+  .modal header h3{ margin:0; font-size:18px; font-weight:800; }
+  .modal .content{ padding:12px 16px 16px; }
+  .modal .table{ width:100%; border-collapse: collapse; }
+  .modal .table th, .modal .table td{ text-align:left; padding:10px 12px; border-bottom:1px solid #f0f2f5; font-size:14px; }
+  .modal .table th{ background:#f8fafc; font-weight:800; }
+  .pill{
+    display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800; background:#eef2ff; color:#3730a3; border:1px solid #e0e7ff;
+  }
+  .close-x{ background:#f3f4f6; color:#111827; border:1px solid #e5e7eb; }
+  .gold{ color:#b45309; }
+  .silver{ color:#4b5563; }
+  .bronze{ color:#92400e; }
   @media (max-width: 720px){
-    :root{
-      --river-h: 520px;
-      --bank-h: 70px;
-      --duck-w: 64px;
-      --duck-h: 40px;
-      --pad: 12px;
-    }
+    :root{ --river-h: 520px; --bank-h: 70px; --duck-w: 64px; --duck-h: 40px; --pad: 12px; }
     .status{ min-width:unset }
   }
 </style>
@@ -362,6 +194,7 @@
     <div class="controls">
       <button id="startBtn">Start Race</button>
       <button id="resetBtn" class="secondary" disabled>Reset</button>
+      <button id="rankBtn" class="ghost" disabled>Show Ranking</button>
       <div class="status" id="status">Ready</div>
       <span class="hint">Tip: resize window then press Reset to re-calc distance.</span>
     </div>
@@ -403,20 +236,44 @@
     <div class="result" id="result"></div>
   </div>
 
+  <!-- ===== Modal Ranking ===== -->
+  <div class="modal-backdrop" id="rankModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="rankTitle">
+      <header>
+        <h3 id="rankTitle">🏆 Ranking Bebek</h3>
+        <button class="close-x" id="closeRank">Close</button>
+      </header>
+      <div class="content">
+        <table class="table" id="rankTable">
+          <thead>
+            <tr><th>Pos</th><th>Bebek</th><th>Waktu</th><th>Catatan</th></tr>
+          </thead>
+          <tbody><!-- rows injected --></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 <script>
 (() => {
   const LANES = 10;
   const MAX_RACE_S = 10;           // hard cap of 10 seconds
-  const MIN_FINISH_S = 7.0;        // random winner can finish as early as 7s
+  const MIN_FINISH_S = 7.0;        // earliest winner
   const DUCK_W = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--duck-w')) || 72;
 
   const lanesEl = document.getElementById('lanes');
   const finishEl = document.getElementById('finish');
   const startBtn = document.getElementById('startBtn');
   const resetBtn = document.getElementById('resetBtn');
+  const rankBtn  = document.getElementById('rankBtn');
   const statusEl = document.getElementById('status');
   const resultEl = document.getElementById('result');
-  const stageEl = document.getElementById('stage');
+  const stageEl  = document.getElementById('stage');
+
+  // modal refs
+  const rankModal = document.getElementById('rankModal');
+  const closeRank = document.getElementById('closeRank');
+  const rankTableBody = document.querySelector('#rankTable tbody');
 
   let raceState = 'idle'; // 'idle' | 'running' | 'done'
   let ducks = [];
@@ -425,86 +282,64 @@
   let winner = null;
   let distancePx = 0;
 
-  // Build lanes + ducks
   function buildTrack(){
-  lanesEl.innerHTML = '';
-  ducks = [];
-  for (let i = 0; i < LANES; i++) {
-    const lane = document.createElement('div');
-    lane.className = 'lane';
-    // HAPUS baris ini (nggak perlu, bikin offset dobel):
-    // lane.style.top = `calc(${i} * var(--lane-h))`;
+    lanesEl.innerHTML = '';
+    ducks = [];
+    for (let i = 0; i < LANES; i++) {
+      const lane = document.createElement('div');
+      lane.className = 'lane';
 
-    const num = document.createElement('div');
-    num.className = 'num';
-    num.textContent = `#${i+1}`;
-    lane.appendChild(num);
+      const num = document.createElement('div');
+      num.className = 'num';
+      num.textContent = `#${i+1}`;
+      lane.appendChild(num);
 
-    const duck = document.createElement('div');
-    duck.className = 'duck';
-    // GANTI baris ini -> center di dalam lane (tanpa i *)
-    duck.style.top = `calc((var(--lane-h) - var(--duck-h)) / 2)`;
-    duck.style.setProperty('--x', '0px');
-    duck.innerHTML = `
-      <div class="wake"></div>
-      ${duckSVG()}
-    `;
-    lane.appendChild(duck);
+      const duck = document.createElement('div');
+      duck.className = 'duck';
+      duck.style.top = `calc((var(--lane-h) - var(--duck-h)) / 2)`;
+      duck.style.setProperty('--x', '0px');
+      duck.innerHTML = `<div class="wake"></div>${duckSVG()}`;
+      lane.appendChild(duck);
 
-    lanesEl.appendChild(lane);
-    ducks.push({
-      id: i+1,
-      el: duck,
-      x: 0,
-      speed: 0,
-      finished: false,
-      finishTime: null,
-    });
+      lanesEl.appendChild(lane);
+      ducks.push({
+        id: i+1,
+        el: duck,
+        x: 0,
+        speed: 0,
+        targetTime: null, // << store target time for ranking
+        finished: false,
+        finishTime: null,
+      });
+    }
+    calcDistance();
   }
-  calcDistance();
-}
 
   function calcDistance(){
-    // distance from duck left to finish inner left minus duck width
     const pad = parseFloat(getComputedStyle(lanesEl).paddingLeft) || 12;
     const lanesRect = lanesEl.getBoundingClientRect();
     const finishRect = finishEl.getBoundingClientRect();
-    distancePx = (finishRect.left - lanesRect.left) - pad - DUCK_W - 6; // 6px margin from line
+    distancePx = (finishRect.left - lanesRect.left) - pad - DUCK_W - 6;
   }
 
-  // SVG for the duck (inline, cute yellow duck)
   function duckSVG(){
     return `
     <svg viewBox="0 0 120 60" aria-hidden="true">
       <defs>
         <linearGradient id="b" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#ffde59"/>
-          <stop offset="1" stop-color="#ffc83d"/>
+          <stop offset="0" stop-color="#ffde59"/><stop offset="1" stop-color="#ffc83d"/>
         </linearGradient>
         <linearGradient id="w" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#ffd94a"/>
-          <stop offset="1" stop-color="#ffbd2e"/>
+          <stop offset="0" stop-color="#ffd94a"/><stop offset="1" stop-color="#ffbd2e"/>
         </linearGradient>
       </defs>
-      <!-- subtle wake bubbles -->
-      <g opacity="0.16">
-        <ellipse cx="12" cy="40" rx="6" ry="3" fill="#fff"/>
-        <ellipse cx="20" cy="42" rx="4.5" ry="2.2" fill="#fff"/>
-      </g>
-      <!-- body -->
+      <g opacity="0.16"><ellipse cx="12" cy="40" rx="6" ry="3" fill="#fff"/><ellipse cx="20" cy="42" rx="4.5" ry="2.2" fill="#fff"/></g>
       <ellipse cx="56" cy="35" rx="34" ry="18" fill="url(#b)" stroke="#cc9f15" stroke-width="1.2"/>
-      <!-- tail -->
       <path d="M26 34 q-10 -4 -12 -10 q10 4 20 1" fill="url(#w)" stroke="#cc9f15" stroke-width="1"/>
-      <!-- wing -->
       <path d="M47 30 q-6 6 -5 12 q8 2 18 -2 q-6 -6 -13 -10z" fill="#ffd34a" stroke="#cc9f15" stroke-width="1" opacity=".9"/>
-      <!-- head -->
       <circle cx="78" cy="26" r="12" fill="url(#w)" stroke="#cc9f15" stroke-width="1.2"/>
-      <!-- eye -->
-      <circle cx="81.5" cy="23.5" r="2.2" fill="#1a2332"/>
-      <circle cx="80.7" cy="23" r="0.8" fill="#fff"/>
-      <!-- beak -->
+      <circle cx="81.5" cy="23.5" r="2.2" fill="#1a2332"/><circle cx="80.7" cy="23" r="0.8" fill="#fff"/>
       <path d="M90 26 q10 2 12 4 q-6 4 -13 1 z" fill="#ff8c3a" stroke="#cc6f1f" stroke-width="1"/>
-      <!-- chin shadow -->
       <ellipse cx="76" cy="31.5" rx="6" ry="2" fill="#00000010"/>
     </svg>`;
   }
@@ -516,57 +351,48 @@
     statusEl.textContent = 'Ready';
     resultEl.classList.remove('show');
     resultEl.textContent = '';
+    rankBtn.disabled = true;
 
-    // Reset positions
     ducks.forEach(d => {
-      d.x = 0;
-      d.speed = 0;
-      d.finished = false;
-      d.finishTime = null;
+      d.x = 0; d.speed = 0; d.finished = false; d.finishTime = null; d.targetTime = null;
       d.el.style.setProperty('--x', '0px');
-      // re-enable gentle bob animation
       d.el.querySelector('svg').style.animationPlayState = 'running';
     });
 
     startBtn.disabled = false;
     resetBtn.disabled = true;
+    hideRanking(); // pastikan modal ketutup kalau ada
   }
 
   function startRace(){
     if(raceState === 'running') return;
     calcDistance();
 
-    // Assign a target finish time for each duck between MIN_FINISH_S..MAX_RACE_S (random)
     ducks.forEach(d => {
-      const tf = rand(MIN_FINISH_S, MAX_RACE_S); // seconds
-      d.speed = distancePx / tf;                 // px/s
-      d.x = 0;
-      d.finished = false;
-      d.finishTime = null;
-      // small per-duck bob phase offset
+      const tf = rand(MIN_FINISH_S, MAX_RACE_S);   // seconds
+      d.targetTime = tf;                           // simpan untuk ranking
+      d.speed = distancePx / tf;                   // px/s
+      d.x = 0; d.finished = false; d.finishTime = null;
       d.el.querySelector('svg').style.animationDelay = `${rand(0,0.8).toFixed(2)}s`;
     });
 
-    // tiny lane-based variability (drafting / wiggle over time)
     startTime = performance.now();
     raceState = 'running';
     startBtn.disabled = true;
     resetBtn.disabled = true;
+    rankBtn.disabled = true;
     statusEl.textContent = 'Racing… 0.00s';
     resultEl.classList.remove('show');
 
-    // animate
     rafId = requestAnimationFrame(tick);
   }
 
   function tick(now){
-    const elapsed = (now - startTime) / 1000; // seconds
+    const elapsed = (now - startTime) / 1000;
     if (raceState !== 'running') return;
 
-    // Update ducks
     ducks.forEach((d, i) => {
       if(d.finished) return;
-      // slight ±2% jiggle to speed to feel organic
       const jiggle = 1 + Math.sin((elapsed + i * 0.37) * 2.3) * 0.02;
       d.x = Math.min(distancePx, d.speed * elapsed * jiggle);
       d.el.style.setProperty('--x', `${d.x}px`);
@@ -581,14 +407,11 @@
       }
     });
 
-    // Update status timer
     if(!winner){
       statusEl.textContent = `Racing… ${elapsed.toFixed(2)}s`;
     }
 
-    // Stop if reached hard limit (10s) with no winner (fallback)
     if(elapsed >= MAX_RACE_S && !winner){
-      // pick farthest as winner
       const leader = [...ducks].sort((a,b)=>b.x - a.x)[0];
       leader.finished = true;
       leader.finishTime = MAX_RACE_S;
@@ -604,7 +427,6 @@
     raceState = 'done';
     cancelAnimationFrame(rafId);
 
-    // Pause bobbing on winner, keep others bobbing
     ducks.forEach(d=>{
       const svg = d.el.querySelector('svg');
       svg.style.animationPlayState = (d === winner) ? 'paused' : 'running';
@@ -615,30 +437,69 @@
     resultEl.classList.add('show');
     resultEl.textContent = `🏆 Duck #${winner.id} wins in ${timeStr}s ${reason==='timecap' ? '(time cap)' : ''}!`;
     resetBtn.disabled = false;
+    rankBtn.disabled = false;
+
+    // === Tampilkan popup ranking otomatis ===
+    buildAndShowRanking();
   }
 
-  function rand(min, max){
-    return Math.random() * (max - min) + min;
+  function rand(min, max){ return Math.random() * (max - min) + min; }
+
+  // ===== Ranking Popup =====
+  function buildRankingData(){
+    // gunakan finishTime jika ada; fallback ke targetTime agar semua punya waktu
+    return ducks.map(d => ({
+      id: d.id,
+      time: (d.finishTime ?? d.targetTime ?? MAX_RACE_S),
+      finished: d.finishTime != null
+    })).sort((a,b)=>a.time - b.time)
+      .map((row, idx)=>({
+        pos: idx+1,
+        id: row.id,
+        timeStr: row.time.toFixed(2).replace(/\.00$/,''),
+        note: row.finished ? '✔ finished' : 'predicted'
+      }));
   }
+
+  function buildAndShowRanking(){
+    const rows = buildRankingData();
+    rankTableBody.innerHTML = rows.map(r=>{
+      const medalClass = r.pos===1 ? 'gold' : r.pos===2 ? 'silver' : r.pos===3 ? 'bronze' : '';
+      const medal = r.pos===1 ? '🥇' : r.pos===2 ? '🥈' : r.pos===3 ? '🥉' : '';
+      return `<tr>
+        <td><span class="${medalClass}">${medal} ${r.pos}</span></td>
+        <td><span class="pill">Duck #${r.id}</span></td>
+        <td>${r.timeStr}s</td>
+        <td>${r.note}</td>
+      </tr>`;
+    }).join('');
+    showRanking();
+  }
+
+  function showRanking(){ rankModal.style.display = 'flex'; }
+  function hideRanking(){ rankModal.style.display = 'none'; }
 
   // Build once
   buildTrack();
-
-  // Update badge sesuai konstanta
   document.querySelector('.badge').textContent = `${LANES} ducks • ${MAX_RACE_S}s max`;
 
-  // Handle controls
+  // Controls
   startBtn.addEventListener('click', startRace);
   resetBtn.addEventListener('click', reset);
+  rankBtn.addEventListener('click', ()=>{ buildAndShowRanking(); });
 
-  // Recalculate on resize (keep positions sane)
+  // Modal handlers
+  closeRank.addEventListener('click', hideRanking);
+  rankModal.addEventListener('click', (e)=>{ if(e.target === rankModal) hideRanking(); });
+  window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') hideRanking(); });
+
+  // Recalc distance on resize (when not running)
   let resizeTimer;
   window.addEventListener('resize', ()=>{
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(()=>{
       if(raceState !== 'running'){
         calcDistance();
-        // snap duck x back within new distance
         ducks.forEach(d=>{
           d.x = Math.min(d.x, distancePx);
           d.el.style.setProperty('--x', `${d.x}px`);
