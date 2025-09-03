@@ -67,8 +67,9 @@
   @keyframes breathe{ 0%,100%{ transform: translateY(0) rotate(-6deg) } 50%{ transform: translateY(-1px) rotate(-7deg) } }
 
   .river{ position:absolute; top:var(--bank-h); left:0; right:0; height:var(--river-h); background: linear-gradient(180deg, var(--water-1), var(--water-2)); overflow:hidden; }
-  .river::before, .river::after{ content:""; position:absolute; inset:0; background-repeat: repeat; pointer-events:none; }
-  .river::before{ background-image: repeating-linear-gradient( to right, transparent 0 80px, var(--wave) 80px 84px, transparent 84px 170px ); animation: drift 9s linear infinite; }
+  .river::before {
+  background-image: radial-gradient(40px 20px at 50% 50%, #ffffff20 0%, transparent 80%);
+  animation: ripple 6s ease-in-out infinite; }  
   .river::after{
     background-image: radial-gradient(10px 6px at 10% 30%, #ffffff50 0 20%, transparent 21%),
                      radial-gradient(8px 5px at 30% 70%, #ffffff45 0 20%, transparent 21%),
