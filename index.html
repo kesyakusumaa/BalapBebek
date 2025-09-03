@@ -427,39 +427,42 @@
 
   // Build lanes + ducks
   function buildTrack(){
-    lanesEl.innerHTML = '';
-    ducks = [];
-    for(let i=0;i<LANES;i++){
-      const lane = document.createElement('div');
-      lane.className = 'lane';
-      lane.style.top = `calc(${i} * var(--lane-h))`;
-      const num = document.createElement('div');
-      num.className = 'num';
-      num.textContent = `#${i+1}`;
-      lane.appendChild(num);
+  lanesEl.innerHTML = '';
+  ducks = [];
+  for (let i = 0; i < LANES; i++) {
+    const lane = document.createElement('div');
+    lane.className = 'lane';
+    // HAPUS baris ini (nggak perlu, bikin offset dobel):
+    // lane.style.top = `calc(${i} * var(--lane-h))`;
 
-      const duck = document.createElement('div');
-      duck.className = 'duck';
-      duck.style.top = `calc(${i} * var(--lane-h) + (var(--lane-h) - var(--duck-h)) / 2)`;
-      duck.style.setProperty('--x', '0px');
-      duck.innerHTML = `
-        <div class="wake"></div>
-        ${duckSVG()}
-      `;
-      lane.appendChild(duck);
+    const num = document.createElement('div');
+    num.className = 'num';
+    num.textContent = `#${i+1}`;
+    lane.appendChild(num);
 
-      lanesEl.appendChild(lane);
-      ducks.push({
-        id: i+1,
-        el: duck,
-        x: 0,
-        speed: 0,       // px/s
-        finished: false,
-        finishTime: null,
-      });
-    }
-    calcDistance();
+    const duck = document.createElement('div');
+    duck.className = 'duck';
+    // GANTI baris ini -> center di dalam lane (tanpa i *)
+    duck.style.top = `calc((var(--lane-h) - var(--duck-h)) / 2)`;
+    duck.style.setProperty('--x', '0px');
+    duck.innerHTML = `
+      <div class="wake"></div>
+      ${duckSVG()}
+    `;
+    lane.appendChild(duck);
+
+    lanesEl.appendChild(lane);
+    ducks.push({
+      id: i+1,
+      el: duck,
+      x: 0,
+      speed: 0,
+      finished: false,
+      finishTime: null,
+    });
   }
+  calcDistance();
+}
 
   function calcDistance(){
     // distance from duck left to finish inner left minus duck width
