@@ -139,6 +139,16 @@
     </header>
 
     <div class="controls">
+  <input id="codeInput" type="text" placeholder="Masukkan kode..." 
+         style="padding:10px 12px; border-radius:10px; border:1px solid #ccc; font-weight:600;" />
+  <button id="startBtn">Start Race</button>
+  <button id="resetBtn" class="secondary" disabled>Reset</button>
+  <button id="rankBtn" class="ghost" disabled>Show Ranking</button>
+  <div class="status" id="status">Ready</div>
+  <span class="hint">Tip: kode harus "GUAGACOR"</span>
+</div>
+
+    <div class="controls">
       <button id="startBtn">Start Race</button>
       <button id="resetBtn" class="secondary" disabled>Reset</button>
       <button id="rankBtn" class="ghost" disabled>Show Ranking</button>
@@ -477,7 +487,14 @@
   document.querySelector('.badge').textContent = `${LANES} ducks • ${MAX_RACE_S}s max`;
 
   // Controls
-  startBtn.addEventListener('click', startRace);
+  // Controls
+startBtn.addEventListener('click', ()=>{
+  const code = document.getElementById('codeInput').value.trim();
+  if(code !== "GUAGACOR"){
+    alert("❌ Kode salah! Masukkan kode GUAGACOR untuk memulai race.");
+    return;
+  }
+  startRace();
   resetBtn.addEventListener('click', reset);
   rankBtn.addEventListener('click', buildAndShowRanking);
 
