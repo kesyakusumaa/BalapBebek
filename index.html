@@ -67,9 +67,8 @@
   @keyframes breathe{ 0%,100%{ transform: translateY(0) rotate(-6deg) } 50%{ transform: translateY(-1px) rotate(-7deg) } }
 
   .river{ position:absolute; top:var(--bank-h); left:0; right:0; height:var(--river-h); background: linear-gradient(180deg, var(--water-1), var(--water-2)); overflow:hidden; }
-  .river::before {
-  background-image: radial-gradient(40px 20px at 50% 50%, #ffffff20 0%, transparent 80%);
-  animation: ripple 6s ease-in-out infinite; }
+  .river::before, .river::after{ content:""; position:absolute; inset:0; background-repeat: repeat; pointer-events:none; }
+  .river::before{ background-image: repeating-linear-gradient( to right, transparent 0 80px, var(--wave) 80px 84px, transparent 84px 170px ); animation: drift 9s linear infinite; }
   .river::after{
     background-image: radial-gradient(10px 6px at 10% 30%, #ffffff50 0 20%, transparent 21%),
                      radial-gradient(8px 5px at 30% 70%, #ffffff45 0 20%, transparent 21%),
@@ -146,7 +145,7 @@
       <button id="resetBtn" class="secondary" disabled>Reset</button>
       <button id="rankBtn" class="ghost" disabled>Show Ranking</button>
       <div class="status" id="status">Ready</div>
-      <span class="hint">Tip: resize window then press Reset to re-calc distance.</span>
+      <span class="hint">Tip: KONFIRMASI ANGKA BEBEK SEBELUM BERMAIN.</span>
     </div>
 
     <div class="stage" id="stage">
@@ -425,36 +424,21 @@
   }
 
   function endRace(reason){
-  raceState = 'done';
-  cancelAnimationFrame(rafId);
-  ducks.forEach(d=> d.el.querySelector('svg').style.animationPlayState = 'paused');
+    raceState = 'done';
+    cancelAnimationFrame(rafId);
 
-  const rows = buildRankingData(); // sudah ada fungsi ini
-  const winner = rows[0];
-  const timeStr = winner.timeStr;
-  statusEl.textContent = `${reason==='all-finished' ? 'All finished.' : 'Time capped.'} Winner: ${winner.name} • ${timeStr}s`;
-  resultEl.classList.add('show');
-  resultEl.textContent = `🏆 ${winner.name} wins in ${timeStr}s ${reason==='timecap' ? '(time cap)' : ''}!`;
-  resetBtn.disabled = false;
-  rankBtn.disabled = false;
+    ducks.forEach(d=> d.el.querySelector('svg').style.animationPlayState = 'paused');
 
-  // === SIMPAN HISTORY LAST ROUND (per device) ===
-  const LAST_KEY = 'duckrace:last';
-  const payload = {
-    seed: SEED_BASE, // seed yang dipakai race ini
-    at: Date.now(),
-    rows,            // ranking lengkap
-  };
-  localStorage.setItem(LAST_KEY, JSON.stringify(payload));
+    const winner = [...ducks].sort((a,b)=>a.finishTime - b.finishTime)[0];
+    const timeStr = winner.finishTime.toFixed(2).replace(/\.00$/,'');
+    statusEl.textContent = `${reason==='all-finished' ? 'All finished.' : 'Time capped.'} Winner: ${winner.name} • ${timeStr}s`;
+    resultEl.classList.add('show');
+    resultEl.textContent = `🏆 ${winner.name} wins in ${timeStr}s ${reason==='timecap' ? '(time cap)' : ''}!`;
+    resetBtn.disabled = false;
+    rankBtn.disabled = false;
 
-  // === Bikin permalink shareable yang merekonstruksi hasil ===
-  const url = new URL(location.href);
-  url.searchParams.set('seed', SEED_BASE);
-  console.log('Share this link for same result:', url.toString());
-
-  buildAndShowRanking();
-}
-
+    buildAndShowRanking();
+  }
 
   function rand(min, max){ return Math.random() * (max - min) + min; }
 
