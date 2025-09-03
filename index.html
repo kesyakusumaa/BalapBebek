@@ -425,21 +425,36 @@
   }
 
   function endRace(reason){
-    raceState = 'done';
-    cancelAnimationFrame(rafId);
+  raceState = 'done';
+  cancelAnimationFrame(rafId);
+  ducks.forEach(d=> d.el.querySelector('svg').style.animationPlayState = 'paused');
 
-    ducks.forEach(d=> d.el.querySelector('svg').style.animationPlayState = 'paused');
+  const rows = buildRankingData(); // sudah ada fungsi ini
+  const winner = rows[0];
+  const timeStr = winner.timeStr;
+  statusEl.textContent = `${reason==='all-finished' ? 'All finished.' : 'Time capped.'} Winner: ${winner.name} • ${timeStr}s`;
+  resultEl.classList.add('show');
+  resultEl.textContent = `🏆 ${winner.name} wins in ${timeStr}s ${reason==='timecap' ? '(time cap)' : ''}!`;
+  resetBtn.disabled = false;
+  rankBtn.disabled = false;
 
-    const winner = [...ducks].sort((a,b)=>a.finishTime - b.finishTime)[0];
-    const timeStr = winner.finishTime.toFixed(2).replace(/\.00$/,'');
-    statusEl.textContent = `${reason==='all-finished' ? 'All finished.' : 'Time capped.'} Winner: ${winner.name} • ${timeStr}s`;
-    resultEl.classList.add('show');
-    resultEl.textContent = `🏆 ${winner.name} wins in ${timeStr}s ${reason==='timecap' ? '(time cap)' : ''}!`;
-    resetBtn.disabled = false;
-    rankBtn.disabled = false;
+  // === SIMPAN HISTORY LAST ROUND (per device) ===
+  const LAST_KEY = 'duckrace:last';
+  const payload = {
+    seed: SEED_BASE, // seed yang dipakai race ini
+    at: Date.now(),
+    rows,            // ranking lengkap
+  };
+  localStorage.setItem(LAST_KEY, JSON.stringify(payload));
 
-    buildAndShowRanking();
-  }
+  // === Bikin permalink shareable yang merekonstruksi hasil ===
+  const url = new URL(location.href);
+  url.searchParams.set('seed', SEED_BASE);
+  console.log('Share this link for same result:', url.toString());
+
+  buildAndShowRanking();
+}
+
 
   function rand(min, max){ return Math.random() * (max - min) + min; }
 
