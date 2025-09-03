@@ -1,160 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Balap Bebek Sungai</title>
-<link rel="icon" type="image/png" href="https://i.ibb.co/PZZpsKgP/DUCK.png" />
-<style>
-  :root{
-    --river-h: 560px;
-    --lanes: 10;
-    --lane-h: calc((var(--river-h) - var(--pad) * 2) / var(--lanes));
-    --bank-h: 80px;
-    --pad: 18px;
-    --finish-w: 18px;
-    --duck-h: min(44px, calc(var(--lane-h) - 10px));
-    --duck-w: calc(var(--duck-h) * 72 / 44);
-    --max-race-s: 10; /* hard cap of 10 seconds */
-    --sky: #cfe8ff;
-    --water-1:#79c7ff; --water-2:#5bb8ff; --wave:#ffffff40;
-    --bank:#8bd17a; --bank-edge:#6db15e; --rock:#7a6e6a; --tree:#2f7a34; --trunk:#864f2a;
-    --line:#ffffff30; --finish-dark:#333; --finish-light:#eee;
-    --text:#0b1a2a; --accent:#0a6efd; --card:#ffffffd9; --shadow: 0 10px 30px rgba(0,0,0,.18);
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans";
-    color:var(--text);
-    background: radial-gradient(1200px 600px at 50% -10%, #ffffff 0%, transparent 60%) , linear-gradient(#eaf5ff, #cfe8ff 60%, #c3e1ff);
-    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
-  }
-  .app{ width:min(1200px, 96vw); }
-  .card{ background:var(--card); backdrop-filter: blur(6px); border-radius:22px; box-shadow: var(--shadow); padding:18px 18px 24px; }
-  header{ display:flex; align-items:center; gap:14px; padding:6px 6px 14px; }
-  header h1{ margin:0; font-weight:800; letter-spacing:.2px; font-size: clamp(18px, 2.4vw, 26px); }
-  header .badge{ font-size:12px; padding:6px 10px; border-radius:999px; background:#0a6efd14; border:1px solid #0a6efd33; color:#084298; font-weight:600; }
-  .controls{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:12px; }
-  button{
-    appearance:none; border:none; border-radius:12px; padding:12px 16px; font-weight:700; cursor:pointer;
-    background:var(--accent); color:white; box-shadow: 0 6px 16px rgba(10,110,253,.25);
-    transition: transform .06s ease, filter .2s ease, opacity .2s ease;
-  }
-  button:hover{ filter:brightness(1.08) }
-  button:active{ transform: translateY(1px) }
-  button.secondary{ background:#11182710; color:#0b1a2a; border:1px solid #11182720; box-shadow:none; }
-  button.ghost{ background:#ffffffaa; color:#0b1a2a; border:1px solid #11182720; box-shadow:none; }
-  button:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
-  .status{ margin-left:auto; font-weight:700; background:#11182708; border:1px solid #11182720; color:#0b1a2a; padding:10px 12px; border-radius:10px; min-width:200px; text-align:center; }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Balap Bebek Sungai</title>
+  <link rel="icon" type="image/png" href="https://i.ibb.co/PZZpsKgP/DUCK.png" />
+  <style>
+    :root{
+      --river-h: 560px;
+      --lanes: 10;
+      --lane-h: calc((var(--river-h) - var(--pad) * 2) / var(--lanes));
+      --bank-h: 80px;
+      --pad: 18px;
+      --finish-w: 18px;
+      --duck-h: min(44px, calc(var(--lane-h) - 10px));
+      --duck-w: calc(var(--duck-h) * 72 / 44);
+      --max-race-s: 10; /* hard cap of 10 seconds */
+      --sky: #cfe8ff;
+      --water-1:#79c7ff; --water-2:#5bb8ff; --wave:#ffffff40;
+      --bank:#8bd17a; --bank-edge:#6db15e; --rock:#7a6e6a; --tree:#2f7a34; --trunk:#864f2a;
+      --line:#ffffff30; --finish-dark:#333; --finish-light:#eee;
+      --text:#0b1a2a; --accent:#0a6efd; --card:#ffffffd9; --shadow: 0 10px 30px rgba(0,0,0,.18);
+    }
+    *{ box-sizing:border-box }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans";
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 50% -10%, #ffffff 0%, transparent 60%),
+        linear-gradient(#eaf5ff, #cfe8ff 60%, #c3e1ff);
+      min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+    }
+    .app{ width:min(1200px, 96vw); }
+    .card{ background:var(--card); backdrop-filter: blur(6px); border-radius:22px; box-shadow: var(--shadow); padding:18px 18px 24px; }
+    header{ display:flex; align-items:center; gap:14px; padding:6px 6px 14px; }
+    header h1{ margin:0; font-weight:800; letter-spacing:.2px; font-size: clamp(18px, 2.4vw, 26px); }
+    header .badge{
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      background:#0a6efd14; border:1px solid #0a6efd33; color:#084298; font-weight:600;
+    }
+    .controls{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:12px; }
+    button{
+      appearance:none; border:none; border-radius:12px; padding:12px 16px; font-weight:700; cursor:pointer;
+      background:var(--accent); color:white; box-shadow: 0 6px 16px rgba(10,110,253,.25);
+      transition: transform .06s ease, filter .2s ease, opacity .2s ease;
+    }
+    button:hover{ filter:brightness(1.08) }
+    button:active{ transform: translateY(1px) }
+    button.secondary{ background:#11182710; color:#0b1a2a; border:1px solid #11182720; box-shadow:none; }
+    button.ghost{ background:#ffffffaa; color:#0b1a2a; border:1px solid #11182720; box-shadow:none; }
+    button:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+    .status{
+      margin-left:auto; font-weight:700; background:#11182708; border:1px solid #11182720;
+      color:#0b1a2a; padding:10px 12px; border-radius:10px; min-width:200px; text-align:center;
+    }
 
-  .stage{
-    position:relative; width:100%;
-    height: calc(var(--river-h) + var(--bank-h) * 2 + 12px);
-    overflow:hidden; border-radius:18px; border:1px solid #ffffff80; background: linear-gradient(#e3f4ff, #d9eeff) no-repeat;
-  }
+    .stage{
+      position:relative; width:100%;
+      height: calc(var(--river-h) + var(--bank-h) * 2 + 12px);
+      overflow:hidden; border-radius:18px; border:1px solid #ffffff80; background: linear-gradient(#e3f4ff, #d9eeff) no-repeat;
+    }
 
-  .bank{
-    position:absolute; left:0; right:0; height:var(--bank-h);
-    background: radial-gradient(180px 40px at 10% 60%, #ffffff80, transparent 60%), linear-gradient(180deg, var(--bank) 0%, var(--bank-edge) 100%);
-    z-index:2; display:flex; align-items:flex-end; padding:0 10px 8px; gap:12px;
-  }
-  .bank.top{ top:0; align-items:flex-start; padding:8px 10px 0; }
-  .bank .scenery{ display:flex; gap:12px; width:100%; justify-content:space-between; opacity:.95; filter: drop-shadow(0 2px 0 rgba(0,0,0,.12)); }
-  .tree{ width:36px; height:46px; position:relative; animation: sway 3.5s ease-in-out infinite; transform-origin: bottom center; }
-  .tree .trunk{ position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:8px; height:18px; background:var(--trunk); border-radius:3px; }
-  .tree .crown{ position:absolute; bottom:10px; left:50%; transform:translateX(-50%); width:34px; height:28px; background:var(--tree); border-radius:50%; box-shadow: 0 -10px 0 6px #34903a inset; }
-  .rock{ width:32px; height:20px; background:var(--rock); border-radius: 40% 60% 45% 55% / 65% 60% 40% 50%; transform: rotate(-6deg); filter: brightness(.95); animation: breathe 4s ease-in-out infinite; }
-  @keyframes sway{ 0%,100%{ transform: rotate(0deg) } 50%{ transform: rotate(-2deg) } }
-  @keyframes breathe{ 0%,100%{ transform: translateY(0) rotate(-6deg) } 50%{ transform: translateY(-1px) rotate(-7deg) } }
+    .bank{
+      position:absolute; left:0; right:0; height:var(--bank-h);
+      background: radial-gradient(180px 40px at 10% 60%, #ffffff80, transparent 60%),
+                  linear-gradient(180deg, var(--bank) 0%, var(--bank-edge) 100%);
+      z-index:2; display:flex; align-items:flex-end; padding:0 10px 8px; gap:12px;
+    }
+    .bank.top{ top:0; align-items:flex-start; padding:8px 10px 0; }
+    .bank .scenery{ display:flex; gap:12px; width:100%; justify-content:space-between; opacity:.95; filter: drop-shadow(0 2px 0 rgba(0,0,0,.12)); }
+    .tree{ width:36px; height:46px; position:relative; animation: sway 3.5s ease-in-out infinite; transform-origin: bottom center; }
+    .tree .trunk{ position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:8px; height:18px; background:var(--trunk); border-radius:3px; }
+    .tree .crown{ position:absolute; bottom:10px; left:50%; transform:translateX(-50%); width:34px; height:28px; background:var(--tree); border-radius:50%; box-shadow: 0 -10px 0 6px #34903a inset; }
+    .rock{
+      width:32px; height:20px; background:var(--rock);
+      border-radius: 40% 60% 45% 55% / 65% 60% 40% 50%; transform: rotate(-6deg);
+      filter: brightness(.95); animation: breathe 4s ease-in-out infinite;
+    }
+    @keyframes sway{ 0%,100%{ transform: rotate(0deg) } 50%{ transform: rotate(-2deg) } }
+    @keyframes breathe{ 0%,100%{ transform: translateY(0) rotate(-6deg) } 50%{ transform: translateY(-1px) rotate(-7deg) } }
 
-  .river{ position:absolute; top:var(--bank-h); left:0; right:0; height:var(--river-h); background: linear-gradient(180deg, var(--water-1), var(--water-2)); overflow:hidden; }
-  .river::before {
-  background-image: radial-gradient(40px 20px at 50% 50%, #ffffff20 0%, transparent 80%);
-  animation: ripple 6s ease-in-out infinite; }  
-  .river::after{
-    background-image: radial-gradient(10px 6px at 10% 30%, #ffffff50 0 20%, transparent 21%),
-                     radial-gradient(8px 5px at 30% 70%, #ffffff45 0 20%, transparent 21%),
-                     radial-gradient(9px 6px at 55% 40%, #ffffff40 0 20%, transparent 21%),
-                     radial-gradient(10px 6px at 80% 65%, #ffffff35 0 20%, transparent 21%);
-    animation: ripple 6s ease-in-out infinite; opacity:.6;
-  }
-  @keyframes drift{ from{ background-position: 0 0 } to{ background-position: 260px 0 } }
-  @keyframes ripple{ 0%,100%{ transform: translateX(0) translateY(0) } 50%{ transform: translateX(-20px) translateY(2px) } }
+    .river{ position:absolute; top:var(--bank-h); left:0; right:0; height:var(--river-h); background: linear-gradient(180deg, var(--water-1), var(--water-2)); overflow:hidden; }
+    .river::before{
+      background-image: radial-gradient(40px 20px at 50% 50%, #ffffff20 0%, transparent 80%);
+      animation: ripple 6s ease-in-out infinite;
+      content:""; position:absolute; inset:0;
+    }
+    .river::after{
+      background-image:
+        radial-gradient(10px 6px at 10% 30%, #ffffff50 0 20%, transparent 21%),
+        radial-gradient(8px 5px at 30% 70%, #ffffff45 0 20%, transparent 21%),
+        radial-gradient(9px 6px at 55% 40%, #ffffff40 0 20%, transparent 21%),
+        radial-gradient(10px 6px at 80% 65%, #ffffff35 0 20%, transparent 21%);
+      animation: ripple 6s ease-in-out infinite; opacity:.6;
+      content:""; position:absolute; inset:0;
+    }
+    @keyframes drift{ from{ background-position: 0 0 } to{ background-position: 260px 0 } }
+    @keyframes ripple{ 0%,100%{ transform: translateX(0) translateY(0) } 50%{ transform: translateX(-20px) translateY(2px) } }
 
-  .lanes{ position:absolute; inset:0; padding: var(--pad); }
-  .lane{ position:relative; height: var(--lane-h); border-bottom: 1px dashed var(--line); }
-  .lane:last-child{ border-bottom:none }
+    .lanes{ position:absolute; inset:0; padding: var(--pad); }
+    .lane{ position:relative; height: var(--lane-h); border-bottom: 1px dashed var(--line); }
+    .lane:last-child{ border-bottom:none }
 
-  .finish{
-    position:absolute; top:var(--pad); bottom:var(--pad); right: calc(var(--pad) + 0px); width:var(--finish-w);
-    background: linear-gradient(90deg, #0000 0 45%, #0002 45% 55%, #0000 55% 100%),
-                repeating-linear-gradient(180deg, var(--finish-light) 0 12px, var(--finish-dark) 12px 24px);
-    border-left:1px solid #00000030; border-right:1px solid #00000020; z-index:4; box-shadow: inset 0 0 0 1px #00000010;
-  }
+    .finish{
+      position:absolute; top:var(--pad); bottom:var(--pad); right: calc(var(--pad) + 0px); width:var(--finish-w);
+      background:
+        linear-gradient(90deg, #0000 0 45%, #0002 45% 55%, #0000 55% 100%),
+        repeating-linear-gradient(180deg, var(--finish-light) 0 12px, var(--finish-dark) 12px 24px);
+      border-left:1px solid #00000030; border-right:1px solid #00000020; z-index:4; box-shadow: inset 0 0 0 1px #00000010;
+    }
 
-  .duck{ --x: 0px; position:absolute; left: var(--pad); top:0; width:var(--duck-w); height:var(--duck-h); transform: translateX(var(--x)); display:flex; align-items:center; justify-content:center; z-index:3; }
-  .duck .wake{ position:absolute; left:-10px; right:6px; top:50%; height: 10px; transform: translateY(-50%); background: radial-gradient(10px 5px at right 50%, #ffffff55 0 50%, transparent 55%); opacity:.5; filter: blur(0.3px); animation: wake 0.7s linear infinite; }
-  @keyframes wake{ 0%{ background-position: 0 0 } 100%{ background-position: 12px 0 } }
-  .duck svg{ width:var(--duck-w); height:var(--duck-h); overflow:visible; animation: bob 1.2s ease-in-out infinite; }
-  @keyframes bob{ 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(3px) } }
+    .duck{
+      --x: 0px;
+      position:absolute; left: var(--pad); top:0; width:var(--duck-w); height:var(--duck-h);
+      transform: translateX(var(--x)); display:flex; align-items:center; justify-content:center; z-index:3;
+    }
+    .duck .wake{
+      position:absolute; left:-10px; right:6px; top:50%; height: 10px; transform: translateY(-50%);
+      background: radial-gradient(10px 5px at right 50%, #ffffff55 0 50%, transparent 55%);
+      opacity:.5; filter: blur(0.3px); animation: wake 0.7s linear infinite;
+    }
+    @keyframes wake{ 0%{ background-position: 0 0 } 100%{ background-position: 12px 0 } }
+    .duck svg{ width:var(--duck-w); height:var(--duck-h); overflow:visible; animation: bob 1.2s ease-in-out infinite; }
+    @keyframes bob{ 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(3px) } }
 
-  /* name tag di atas bebek */
-  .nameTag{
-    position:absolute; bottom: calc(100% + 2px); left:-2px; transform: translateY(-2px);
-    font-size:11px; font-weight:800; padding:2px 6px; border-radius:999px; max-width:160px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    background:#ffffffd8; border:1px solid #00000017; color:#0f172a; backdrop-filter: blur(2px);
-    user-select:none;
-  }
+    .nameTag{
+      position:absolute; bottom: calc(100% + 2px); left:-2px; transform: translateY(-2px);
+      font-size:11px; font-weight:800; padding:2px 6px; border-radius:999px; max-width:160px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      background:#ffffffd8; border:1px solid #00000017; color:#0f172a; backdrop-filter: blur(2px);
+      user-select:none;
+    }
 
-  .lane .num{ position:absolute; left:4px; top:6px; font-size: 12px; font-weight:800; color:#083b6b80; user-select:none; }
+    .lane .num{ position:absolute; left:4px; top:6px; font-size: 12px; font-weight:800; color:#083b6b80; user-select:none; }
 
-  .result{ margin-top:14px; padding:12px 14px; border-radius:12px; background:#10b98118; border:1px solid #10b98155; color:#065f46; font-weight:700; display:none; }
-  .result.show{ display:block }
+    .result{
+      margin-top:14px; padding:12px 14px; border-radius:12px;
+      background:#10b98118; border:1px solid #10b98155; color:#065f46; font-weight:700; display:none;
+    }
+    .result.show{ display:block }
 
-  .hint{ font-size:12px; color:#0b1a2a99; margin-left:6px; }
+    .hint{ font-size:12px; color:#0b1a2a99; margin-left:6px; }
 
-  /* Modal Ranking */
-  .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:50; }
-  .modal{ background:white; width:min(560px, 92vw); border-radius:16px; box-shadow: var(--shadow); overflow:hidden; }
-  .modal header{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 16px; border-bottom:1px solid #e5e7eb; }
-  .modal header h3{ margin:0; font-size:18px; font-weight:800; }
-  .modal .content{ padding:12px 16px 16px; }
-  .modal .table{ width:100%; border-collapse: collapse; }
-  .modal .table th, .modal .table td{ text-align:left; padding:10px 12px; border-bottom:1px solid #f0f2f5; font-size:14px; }
-  .modal .table th{ background:#f8fafc; font-weight:800; }
-  .pill{ display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800; background:#eef2ff; color:#3730a3; border:1px solid #e0e7ff; }
-  .muted{ color:#6b7280; font-weight:700; font-size:12px; margin-left:6px; }
-  .close-x{ background:#f3f4f6; color:#111827; border:1px solid #e5e7eb; }
-  .gold{ color:#b45309; } .silver{ color:#4b5563; } .bronze{ color:#92400e; }
+    /* Modal Ranking */
+    .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:50; }
+    .modal{ background:white; width:min(560px, 92vw); border-radius:16px; box-shadow: var(--shadow); overflow:hidden; }
+    .modal header{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 16px; border-bottom:1px solid #e5e7eb; }
+    .modal header h3{ margin:0; font-size:18px; font-weight:800; }
+    .modal .content{ padding:12px 16px 16px; }
+    .modal .table{ width:100%; border-collapse: collapse; }
+    .modal .table th, .modal .table td{ text-align:left; padding:10px 12px; border-bottom:1px solid #f0f2f5; font-size:14px; }
+    .modal .table th{ background:#f8fafc; font-weight:800; }
+    .pill{
+      display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800;
+      background:#eef2ff; color:#3730a3; border:1px solid #e0e7ff;
+    }
+    .muted{ color:#6b7280; font-weight:700; font-size:12px; margin-left:6px; }
+    .close-x{ background:#f3f4f6; color:#111827; border:1px solid #e5e7eb; }
+    .gold{ color:#b45309; } .silver{ color:#4b5563; } .bronze{ color:#92400e; }
 
-  @media (max-width: 720px){
-    :root{ --river-h: 520px; --bank-h: 70px; --duck-w: 64px; --duck-h: 40px; --pad: 12px; }
-    .status{ min-width:unset }
-  }
-  /* --- Winner glow & bounce --- */
-.duck.win {
-  filter: drop-shadow(0 0 10px rgba(255,215,0,.9)) drop-shadow(0 0 18px rgba(255,215,0,.6));
-}
-.duck.win svg {
-  animation: bob 1.2s ease-in-out infinite, winScale .9s ease-in-out infinite;
-}
-@keyframes winScale{
-  0%,100%{ transform: translateY(0) scale(1) }
-  50%{ transform: translateY(3px) scale(1.08) }
-}
+    @media (max-width: 720px){
+      :root{ --river-h: 520px; --bank-h: 70px; --duck-w: 64px; --duck-h: 40px; --pad: 12px; }
+      .status{ min-width:unset }
+    }
 
-/* --- Modal pop-in --- */
-.modal-backdrop.show { display:flex; animation: fadeIn .18s ease-out; }
-.modal.anim-in { animation: popIn .18s ease-out; }
-@keyframes fadeIn { from{ opacity:0 } to{ opacity:1 } }
-@keyframes popIn { 0%{ transform: scale(.9); opacity:0 } 100%{ transform: scale(1); opacity:1 } }
+    /* --- Winner glow & bounce --- */
+    .duck.win{
+      filter: drop-shadow(0 0 10px rgba(255,215,0,.9)) drop-shadow(0 0 18px rgba(255,215,0,.6));
+    }
+    .duck.win svg{ animation: bob 1.2s ease-in-out infinite, winScale .9s ease-in-out infinite; }
+    @keyframes winScale{
+      0%,100%{ transform: translateY(0) scale(1) }
+      50%{ transform: translateY(3px) scale(1.08) }
+    }
 
-/* --- Confetti --- */
-.confetti {
-  position: fixed; width:8px; height:12px; pointer-events:none;
-  will-change: transform, opacity;
-}
-</style>
+    /* --- Modal pop-in --- */
+    .modal-backdrop.show{ display:flex; animation: fadeIn .18s ease-out; }
+    .modal.anim-in{ animation: popIn .18s ease-out; }
+    @keyframes fadeIn{ from{ opacity:0 } to{ opacity:1 } }
+    @keyframes popIn{ 0%{ transform: scale(.9); opacity:0 } 100%{ transform: scale(1); opacity:1 } }
+
+    /* --- Confetti --- */
+    .confetti{
+      position: fixed; width:8px; height:12px; pointer-events:none; will-change: transform, opacity;
+    }
+  </style>
 </head>
 <body>
   <div class="app card">
@@ -164,8 +195,8 @@
     </header>
 
     <div class="controls">
-      <input id="codeInput" type="password" placeholder="Masukkan kode..." 
-       style="padding:10px 12px; border-radius:10px; border:1px solid #ccc; font-weight:600;" />
+      <input id="codeInput" type="password" placeholder="Masukkan kode..."
+             style="padding:10px 12px; border-radius:10px; border:1px solid #ccc; font-weight:600;" />
       <button id="startBtn">Start Race</button>
       <button id="resetBtn" class="secondary" disabled>Reset</button>
       <button id="rankBtn" class="ghost" disabled>Show Ranking</button>
@@ -219,421 +250,430 @@
     </div>
   </div>
 
-<script>
-(() => {
-  const LANES = 10;
-  const MAX_RACE_S = 10;
-  const MIN_FINISH_S = 7.0;
-  const DUCK_W = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--duck-w')) || 72;
+  <script>
+    (() => {
+      const LANES = 10;
+      const MAX_RACE_S = 10;
+      const MIN_FINISH_S = 7.0;
+      const DUCK_W = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--duck-w')) || 72;
 
-  const lanesEl = document.getElementById('lanes');
-  const finishEl = document.getElementById('finish');
-  const startBtn = document.getElementById('startBtn');
-  const resetBtn = document.getElementById('resetBtn');
-  const rankBtn  = document.getElementById('rankBtn');
-  const statusEl = document.getElementById('status');
-  const resultEl = document.getElementById('result');
+      const lanesEl = document.getElementById('lanes');
+      const finishEl = document.getElementById('finish');
+      const startBtn = document.getElementById('startBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const rankBtn  = document.getElementById('rankBtn');
+      const statusEl = document.getElementById('status');
+      const resultEl = document.getElementById('result');
 
-  const rankModal = document.getElementById('rankModal');
-  const closeRank = document.getElementById('closeRank');
-  const rankTableBody = document.querySelector('#rankTable tbody');
+      const rankModal = document.getElementById('rankModal');
+      const closeRank = document.getElementById('closeRank');
+      const rankTableBody = document.querySelector('#rankTable tbody');
 
-  let raceState = 'idle'; // 'idle' | 'running' | 'done'
-  let ducks = [];
-  let rafId = null;
-  let startTime = 0;
-  let distancePx = 0;
+      let raceState = 'idle'; // 'idle' | 'running' | 'done'
+      let ducks = [];
+      let rafId = null;
+      let startTime = 0;
+      let distancePx = 0;
 
-  // Palet warna (body A, body B)
-  const PALETTE = [
-    ['#ffd54f','#ffb300'], // gold
-    ['#60a5fa','#2563eb'], // blue
-    ['#34d399','#059669'], // green
-    ['#f472b6','#db2777'], // pink
-    ['#f59e0b','#ea580c'], // orange
-    ['#a78bfa','#7c3aed'], // purple
-    ['#2dd4bf','#0d9488'], // teal
-    ['#f97316','#c2410c'], // amber/orange deep
-    ['#84cc16','#4d7c0f'], // lime
-    ['#22d3ee','#0891b2'], // cyan
-    ['#fca5a5','#ef4444'], // red
-    ['#c4b5fd','#8b5cf6'], // indigo
-  ];
+      // Palet warna (body A, body B)
+      const PALETTE = [
+        ['#ffd54f','#ffb300'], // gold
+        ['#60a5fa','#2563eb'], // blue
+        ['#34d399','#059669'], // green
+        ['#f472b6','#db2777'], // pink
+        ['#f59e0b','#ea580c'], // orange
+        ['#a78bfa','#7c3aed'], // purple
+        ['#2dd4bf','#0d9488'], // teal
+        ['#f97316','#c2410c'], // amber/orange deep
+        ['#84cc16','#4d7c0f'], // lime
+        ['#22d3ee','#0891b2'], // cyan
+        ['#fca5a5','#ef4444'], // red
+        ['#c4b5fd','#8b5cf6'], // indigo
+      ];
 
-  // Generator nama acak
-  function randomNames(n){
-    const adj = ['Bebek','Bebek','Bebek'];
-    const nouns = ['Gulai','Semur','Rica','Percak','Balado','Kari','Asap','Goreng','Bakar','Pepes','Rebus'];
-    const combos = [];
-    // buat semua kombinasi lalu acak
-    adj.forEach(a=>nouns.forEach(b=>combos.push(`${a} ${b}`)));
-    shuffle(combos);
-    const out = [];
-    let i=0;
-    while(out.length<n){
-      const candidate = combos[i++] || `Duck ${out.length+1}`;
-      // hindari duplikat
-      if(!out.includes(candidate)) out.push(candidate);
-    }
-    return out;
-  }
-  function shuffle(arr){
-    for(let i=arr.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [arr[i],arr[j]]=[arr[j],arr[i]];
-    }
-    return arr;
-  }
-
-  function buildTrack(){
-    lanesEl.innerHTML = '';
-    ducks = [];
-
-    // siapkan nama unik
-    const names = randomNames(LANES);
-
-    for (let i = 0; i < LANES; i++) {
-      const lane = document.createElement('div');
-      lane.className = 'lane';
-
-      const num = document.createElement('div');
-      num.className = 'num';
-      num.textContent = `#${i+1}`;
-      lane.appendChild(num);
-
-      // pilih warna
-      const [c1,c2] = PALETTE[i % PALETTE.length];
-
-      const duck = document.createElement('div');
-      duck.className = 'duck';
-      duck.style.top = `calc((var(--lane-h) - var(--duck-h)) / 2)`;
-      duck.style.setProperty('--x', '0px');
-
-      // name tag
-      const tag = document.createElement('div');
-      tag.className = 'nameTag';
-      tag.textContent = names[i];
-      duck.appendChild(tag);
-
-      // svg berwarna
-      duck.insertAdjacentHTML('beforeend', duckSVG(c1, c2));
-
-      lane.appendChild(duck);
-      lanesEl.appendChild(lane);
-
-      ducks.push({
-        id: i+1,
-        name: names[i],
-        colors: [c1,c2],
-        el: duck,
-        x: 0,
-        speed: 0,
-        targetTime: null,
-        finished: false,
-        finishTime: null,
-      });
-    }
-    calcDistance();
-  }
-
-  function calcDistance(){
-    const pad = parseFloat(getComputedStyle(lanesEl).paddingLeft) || 12;
-    const lanesRect = lanesEl.getBoundingClientRect();
-    const finishRect = finishEl.getBoundingClientRect();
-    distancePx = (finishRect.left - lanesRect.left) - pad - DUCK_W - 6;
-  }
-
-  // SVG duck yang menerima warna body (c1,c2)
-  function duckSVG(c1='#ffde59', c2='#ffc83d'){
-    return `
-    <svg viewBox="0 0 120 60" aria-hidden="true">
-      <defs>
-        <linearGradient id="b" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/>
-        </linearGradient>
-        <linearGradient id="w" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/>
-        </linearGradient>
-      </defs>
-      <g opacity="0.16"><ellipse cx="12" cy="40" rx="6" ry="3" fill="#fff"/><ellipse cx="20" cy="42" rx="4.5" ry="2.2" fill="#fff"/></g>
-      <ellipse cx="56" cy="35" rx="34" ry="18" fill="url(#b)" stroke="#cc9f15" stroke-width="1.2"/>
-      <path d="M26 34 q-10 -4 -12 -10 q10 4 20 1" fill="url(#w)" stroke="#cc9f15" stroke-width="1"/>
-      <path d="M47 30 q-6 6 -5 12 q8 2 18 -2 q-6 -6 -13 -10z" fill="${c1}" stroke="#cc9f15" stroke-width="1" opacity=".9"/>
-      <circle cx="78" cy="26" r="12" fill="url(#w)" stroke="#cc9f15" stroke-width="1.2"/>
-      <circle cx="81.5" cy="23.5" r="2.2" fill="#1a2332"/><circle cx="80.7" cy="23" r="0.8" fill="#fff"/>
-      <path d="M90 26 q10 2 12 4 q-6 4 -13 1 z" fill="#ff8c3a" stroke="#cc6f1f" stroke-width="1"/>
-      <ellipse cx="76" cy="31.5" rx="6" ry="2" fill="#00000010"/>
-    </svg>`;
-  }
-  /* ===== Audio & FX ===== */
-let audioCtx = null;
-function ensureAudio(){
-  if (!audioCtx) {
-    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-    catch(e){ /* ignore */ }
-  }
-}
-
-function tone(freq=440, dur=0.15, when=0, type='sine', gain=0.08){
-  if(!audioCtx) return;
-  const o = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o.type = type; o.frequency.value = freq;
-  g.gain.value = gain;
-  o.connect(g); g.connect(audioCtx.destination);
-  o.start(audioCtx.currentTime + when);
-  o.stop(audioCtx.currentTime + when + dur);
-}
-
-function fanfare(){
-  if(!audioCtx) return;
-  // simple triad: C–E–G naik + “ta-daa”
-  const now = audioCtx.currentTime;
-  [[523,0],[659,0.05],[784,0.1]].forEach(([f,off])=>tone(f,0.24,off,'triangle',0.07));
-  // tail
-  tone(988,0.18,0.28,'square',0.06);
-  // “pop” noise-ish transient
-  const o = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o.type='square'; o.frequency.value=160;
-  g.gain.setValueAtTime(0.05, now+0.02);
-  g.gain.exponentialRampToValueAtTime(0.0001, now+0.14);
-  o.connect(g); g.connect(audioCtx.destination);
-  o.start(now+0.02); o.stop(now+0.16);
-}
-
-function uiPop(){
-  // kecil aja buat modal
-  tone(880,0.06,0,'sine',0.05);
-  tone(1320,0.05,0.03,'sine',0.04);
-}
-
-/* ===== Confetti ===== */
-function spawnConfetti(x, y, count=40){
-  const colors = ['#fbbf24','#22c55e','#60a5fa','#f472b6','#ef4444','#a78bfa'];
-  for(let i=0;i<count;i++){
-    const el = document.createElement('div');
-    el.className = 'confetti';
-    el.style.left = `${x}px`;
-    el.style.top  = `${y}px`;
-    el.style.background = colors[i%colors.length];
-    el.style.transform = `translate(-50%,-50%) rotate(${Math.random()*360}deg)`;
-    document.body.appendChild(el);
-
-    const dx = (Math.random()*2-1) * 180;
-    const dy = 220 + Math.random()*180;
-    const rot = (Math.random()*2-1)*720;
-    const dur = 800 + Math.random()*700;
-
-    el.animate([
-      { transform: `translate(-50%,-50%) translate(0px,0px) rotate(0deg)`, opacity:1 },
-      { transform: `translate(-50%,-50%) translate(${dx}px,${dy}px) rotate(${rot}deg)`, opacity:0.1 }
-    ], { duration: dur, easing:'cubic-bezier(.2,.6,.2,1)' });
-
-    setTimeout(()=> el.remove(), dur+50);
-  }
-}
-
-  function reset(){
-    cancelAnimationFrame(rafId);
-    raceState = 'idle';
-    statusEl.textContent = 'Ready';
-    resultEl.classList.remove('show');
-    resultEl.textContent = '';
-    rankBtn.disabled = true;
-
-    ducks.forEach(d => {
-      d.x = 0; d.speed = 0; d.finished = false; d.finishTime = null; d.targetTime = null;
-      d.el.style.setProperty('--x', '0px');
-      d.el.querySelector('svg').style.animationPlayState = 'running';
-    });
-
-    startBtn.disabled = false;
-    resetBtn.disabled = true;
-    hideRanking();
-  }
-
-  function startRace(){
-    if(raceState === 'running') return;
-    calcDistance();
-
-    ducks.forEach(d => {
-      const tf = rand(MIN_FINISH_S, MAX_RACE_S);
-      d.targetTime = tf;
-      d.speed = distancePx / tf;
-      d.x = 0; d.finished = false; d.finishTime = null;
-      d.el.querySelector('svg').style.animationDelay = `${rand(0,0.8).toFixed(2)}s`;
-    });
-
-    startTime = performance.now();
-    raceState = 'running';
-    startBtn.disabled = true;
-    resetBtn.disabled = true;
-    rankBtn.disabled = true;
-    statusEl.textContent = `Racing… 0.00s • 0/${LANES} finished`;
-    resultEl.classList.remove('show');
-
-    rafId = requestAnimationFrame(tick);
-  }
-
-  function tick(now){
-    const elapsed = (now - startTime) / 1000;
-    if (raceState !== 'running') return;
-
-    ducks.forEach((d, i) => {
-      if(d.finished) return;
-      const jiggle = 1 + Math.sin((elapsed + i * 0.37) * 2.3) * 0.02;
-      d.x = Math.min(distancePx, d.speed * elapsed * jiggle);
-      d.el.style.setProperty('--x', `${d.x}px`);
-
-      if(d.x >= distancePx && !d.finished){
-        d.finished = true;
-        d.finishTime = elapsed;
+      // Generator nama acak
+      function randomNames(n){
+        const adj = ['Bebek','Bebek','Bebek'];
+        const nouns = ['Gulai','Semur','Rica','Percak','Balado','Kari','Asap','Goreng','Bakar','Pepes','Rebus'];
+        const combos = [];
+        adj.forEach(a => nouns.forEach(b => combos.push(`${a} ${b}`)));
+        shuffle(combos);
+        const out = [];
+        let i = 0;
+        while(out.length < n){
+          const candidate = combos[i++] || `Duck ${out.length+1}`;
+          if(!out.includes(candidate)) out.push(candidate); // hindari duplikat
+        }
+        return out;
       }
-    });
+      function shuffle(arr){
+        for(let i=arr.length-1;i>0;i--){
+          const j = Math.floor(Math.random()*(i+1));
+          [arr[i],arr[j]] = [arr[j],arr[i]];
+        }
+        return arr;
+      }
 
-    const finishedCount = ducks.reduce((n,d)=>n + (d.finished?1:0), 0);
-    statusEl.textContent = `Racing… ${elapsed.toFixed(2)}s • ${finishedCount}/${LANES} finished`;
+      function buildTrack(){
+        lanesEl.innerHTML = '';
+        ducks = [];
 
-    if(finishedCount === LANES){
-      endRace('all-finished');
-      return;
-    }
+        const names = randomNames(LANES);
+        for (let i = 0; i < LANES; i++) {
+          const lane = document.createElement('div');
+          lane.className = 'lane';
 
-    if(elapsed >= MAX_RACE_S){
-      ducks.forEach(d=>{
-        if(!d.finished){
-          d.finished = true;
-          d.finishTime = elapsed;
-          d.x = distancePx;
+          const num = document.createElement('div');
+          num.className = 'num';
+          num.textContent = `#${i+1}`;
+          lane.appendChild(num);
+
+          const [c1,c2] = PALETTE[i % PALETTE.length];
+
+          const duck = document.createElement('div');
+          duck.className = 'duck';
+          duck.style.top = `calc((var(--lane-h) - var(--duck-h)) / 2)`;
+          duck.style.setProperty('--x', '0px');
+
+          const tag = document.createElement('div');
+          tag.className = 'nameTag';
+          tag.textContent = names[i];
+          duck.appendChild(tag);
+
+          duck.insertAdjacentHTML('beforeend', duckSVG(c1, c2));
+
+          lane.appendChild(duck);
+          lanesEl.appendChild(lane);
+
+          ducks.push({
+            id: i+1,
+            name: names[i],
+            colors: [c1,c2],
+            el: duck,
+            x: 0,
+            speed: 0,
+            targetTime: null,
+            finished: false,
+            finishTime: null,
+          });
+        }
+        calcDistance();
+      }
+
+      function calcDistance(){
+        const pad = parseFloat(getComputedStyle(lanesEl).paddingLeft) || 12;
+        const lanesRect = lanesEl.getBoundingClientRect();
+        const finishRect = finishEl.getBoundingClientRect();
+        distancePx = (finishRect.left - lanesRect.left) - pad - DUCK_W - 6;
+      }
+
+      // SVG duck berwarna
+      function duckSVG(c1='#ffde59', c2='#ffc83d'){
+        return `
+          <svg viewBox="0 0 120 60" aria-hidden="true">
+            <defs>
+              <linearGradient id="b" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/>
+              </linearGradient>
+              <linearGradient id="w" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/>
+              </linearGradient>
+            </defs>
+            <g opacity="0.16">
+              <ellipse cx="12" cy="40" rx="6" ry="3" fill="#fff"/>
+              <ellipse cx="20" cy="42" rx="4.5" ry="2.2" fill="#fff"/>
+            </g>
+            <ellipse cx="56" cy="35" rx="34" ry="18" fill="url(#b)" stroke="#cc9f15" stroke-width="1.2"/>
+            <path d="M26 34 q-10 -4 -12 -10 q10 4 20 1" fill="url(#w)" stroke="#cc9f15" stroke-width="1"/>
+            <path d="M47 30 q-6 6 -5 12 q8 2 18 -2 q-6 -6 -13 -10z" fill="${c1}" stroke="#cc9f15" stroke-width="1" opacity=".9"/>
+            <circle cx="78" cy="26" r="12" fill="url(#w)" stroke="#cc9f15" stroke-width="1.2"/>
+            <circle cx="81.5" cy="23.5" r="2.2" fill="#1a2332"/>
+            <circle cx="80.7" cy="23" r="0.8" fill="#fff"/>
+            <path d="M90 26 q10 2 12 4 q-6 4 -13 1 z" fill="#ff8c3a" stroke="#cc6f1f" stroke-width="1"/>
+            <ellipse cx="76" cy="31.5" rx="6" ry="2" fill="#00000010"/>
+          </svg>`;
+      }
+
+      /* ===== Audio & FX ===== */
+      let audioCtx = null;
+
+      async function ensureAudio(){
+        if (!audioCtx) {
+          try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+          catch(e){ /* ignore */ }
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+          try { await audioCtx.resume(); } catch(e){ /* ignore */ }
+        }
+      }
+
+      function tone(freq=440, dur=0.15, when=0, type='sine', gain=0.08){
+        if(!audioCtx) return;
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = type; o.frequency.value = freq;
+        g.gain.value = gain;
+        o.connect(g); g.connect(audioCtx.destination);
+        const t0 = audioCtx.currentTime + when;
+        o.start(t0);
+        // kecilkan halus di ekor biar gak “click”
+        g.gain.setValueAtTime(gain, t0 + Math.max(0, dur - 0.05));
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        o.stop(t0 + dur + 0.005);
+      }
+
+      function fanfare(){
+        if(!audioCtx) return;
+        const seq = [[523,0],[659,0.05],[784,0.1]]; // C–E–G
+        seq.forEach(([f,off])=>tone(f,0.24,off,'triangle',0.07));
+        tone(988,0.18,0.28,'square',0.06); // tail
+        // “pop” transient
+        const now = audioCtx.currentTime;
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type='square'; o.frequency.value=160;
+        g.gain.setValueAtTime(0.05, now+0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, now+0.14);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(now+0.02); o.stop(now+0.16);
+      }
+
+      function uiPop(){
+        tone(880,0.06,0,'sine',0.05);
+        tone(1320,0.05,0.03,'sine',0.04);
+      }
+
+      function spawnConfetti(x, y, count=40){
+        const colors = ['#fbbf24','#22c55e','#60a5fa','#f472b6','#ef4444','#a78bfa'];
+        for(let i=0;i<count;i++){
+          const el = document.createElement('div');
+          el.className = 'confetti';
+          el.style.left = `${x}px`;
+          el.style.top  = `${y}px`;
+          el.style.background = colors[i%colors.length];
+          el.style.transform = `translate(-50%,-50%) rotate(${Math.random()*360}deg)`;
+          document.body.appendChild(el);
+
+          const dx = (Math.random()*2-1) * 180;
+          const dy = 220 + Math.random()*180;
+          const rot = (Math.random()*2-1)*720;
+          const dur = 800 + Math.random()*700;
+
+          el.animate(
+            [
+              { transform: `translate(-50%,-50%) translate(0px,0px) rotate(0deg)`, opacity:1 },
+              { transform: `translate(-50%,-50%) translate(${dx}px,${dy}px) rotate(${rot}deg)`, opacity:0.1 }
+            ],
+            { duration: dur, easing:'cubic-bezier(.2,.6,.2,1)' }
+          );
+
+          setTimeout(()=> el.remove(), dur+50);
+        }
+      }
+
+      function reset(){
+        cancelAnimationFrame(rafId);
+        raceState = 'idle';
+        statusEl.textContent = 'Ready';
+        resultEl.classList.remove('show');
+        resultEl.textContent = '';
+        rankBtn.disabled = true;
+
+        ducks.forEach(d => {
+          d.x = 0; d.speed = 0; d.finished = false; d.finishTime = null; d.targetTime = null;
+          d.el.style.setProperty('--x', '0px');
+          d.el.querySelector('svg').style.animationPlayState = 'running';
+          d.el.classList.remove('win');
+        });
+
+        startBtn.disabled = false;
+        resetBtn.disabled = true;
+        hideRanking();
+      }
+
+      function startRace(){
+        if(raceState === 'running') return;
+        calcDistance();
+
+        ducks.forEach(d => {
+          const tf = rand(MIN_FINISH_S, MAX_RACE_S);
+          d.targetTime = tf;
+          d.speed = distancePx / tf;
+          d.x = 0; d.finished = false; d.finishTime = null;
+          d.el.querySelector('svg').style.animationDelay = `${rand(0,0.8).toFixed(2)}s`;
+        });
+
+        startTime = performance.now();
+        raceState = 'running';
+        startBtn.disabled = true;
+        resetBtn.disabled = true;
+        rankBtn.disabled = true;
+        statusEl.textContent = `Racing… 0.00s • 0/${LANES} finished`;
+        resultEl.classList.remove('show');
+
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function tick(now){
+        const elapsed = (now - startTime) / 1000;
+        if (raceState !== 'running') return;
+
+        ducks.forEach((d, i) => {
+          if(d.finished) return;
+          const jiggle = 1 + Math.sin((elapsed + i * 0.37) * 2.3) * 0.02;
+          d.x = Math.min(distancePx, d.speed * elapsed * jiggle);
           d.el.style.setProperty('--x', `${d.x}px`);
+
+          if(d.x >= distancePx && !d.finished){
+            d.finished = true;
+            d.finishTime = elapsed;
+          }
+        });
+
+        const finishedCount = ducks.reduce((n,d)=>n + (d.finished?1:0), 0);
+        statusEl.textContent = `Racing… ${elapsed.toFixed(2)}s • ${finishedCount}/${LANES} finished`;
+
+        if(finishedCount === LANES){
+          endRace('all-finished'); return;
+        }
+
+        if(elapsed >= MAX_RACE_S){
+          ducks.forEach(d=>{
+            if(!d.finished){
+              d.finished = true;
+              d.finishTime = elapsed;
+              d.x = distancePx;
+              d.el.style.setProperty('--x', `${d.x}px`);
+            }
+          });
+          endRace('timecap'); return;
+        }
+
+        if(raceState === 'running') rafId = requestAnimationFrame(tick);
+      }
+
+      function endRace(reason){
+        raceState = 'done';
+        cancelAnimationFrame(rafId);
+
+        ducks.forEach(d => d.el.querySelector('svg').style.animationPlayState = 'paused');
+
+        const winner = [...ducks].sort((a,b)=>a.finishTime - b.finishTime)[0];
+
+        /* === Efek juara (glow + fanfare + confetti) === */
+        if (winner && winner.el) {
+          winner.el.classList.add('win');
+          if (typeof fanfare === 'function') fanfare();
+
+          const finishRect = finishEl.getBoundingClientRect();
+          const duckRect   = winner.el.getBoundingClientRect();
+          const cx = finishRect.left - 6; // dekat garis finish
+          const cy = duckRect.top + duckRect.height / 2;
+          if (typeof spawnConfetti === 'function') spawnConfetti(cx, cy, 48);
+        }
+        /* === End efek juara === */
+
+        const timeStr = winner.finishTime.toFixed(2).replace(/\.00$/,'');
+        statusEl.textContent = `${reason==='all-finished' ? 'All finished.' : 'Time capped.'} Winner: ${winner.name} • ${timeStr}s`;
+        resultEl.classList.add('show');
+        resultEl.textContent = `🏆 ${winner.name} wins in ${timeStr}s ${reason==='timecap' ? '(time cap)' : ''}!`;
+        resetBtn.disabled = false;
+        rankBtn.disabled = false;
+
+        buildAndShowRanking();
+      }
+
+      function rand(min, max){ return Math.random() * (max - min) + min; }
+
+      /* ===== Ranking ===== */
+      function buildRankingData(){
+        return ducks
+          .map(d => ({ id: d.id, name: d.name, time: d.finishTime ?? d.targetTime ?? MAX_RACE_S, finished: d.finishTime != null }))
+          .sort((a,b)=>a.time - b.time)
+          .map((row, idx)=>({
+            pos: idx+1,
+            name: row.name,
+            id: row.id,
+            timeStr: row.time.toFixed(2).replace(/\.00$/,''),
+            note: row.finished ? '✔ finished' : 'predicted'
+          }));
+      }
+
+      function buildAndShowRanking(){
+        const rows = buildRankingData();
+        rankTableBody.innerHTML = rows.map(r=>{
+          const medalClass = r.pos===1 ? 'gold' : r.pos===2 ? 'silver' : r.pos===3 ? 'bronze' : '';
+          const medal = r.pos===1 ? '🥇' : r.pos===2 ? '🥈' : r.pos===3 ? '🥉' : '';
+          return `<tr>
+            <td><span class="${medalClass}">${medal} ${r.pos}</span></td>
+            <td><span class="pill">${r.name}</span><span class="muted">#${r.id}</span></td>
+            <td>${r.timeStr}s</td>
+            <td>${r.note}</td>
+          </tr>`;
+        }).join('');
+        showRanking();
+      }
+
+      function showRanking(){
+        rankModal.classList.add('show'); // fadeIn backdrop
+        const inner = rankModal.querySelector('.modal');
+        inner.classList.add('anim-in');
+        uiPop();
+      }
+
+      function hideRanking(){
+        rankModal.classList.remove('show');
+        const inner = rankModal.querySelector('.modal');
+        inner.classList.remove('anim-in');
+      }
+
+      // Build once
+      buildTrack();
+      document.querySelector('.badge').textContent = `${LANES} ducks • ${MAX_RACE_S}s max`;
+
+      // Controls
+      startBtn.addEventListener('click', async ()=>{
+        await ensureAudio(); // penting biar WebAudio aktif
+        const code = document.getElementById('codeInput').value.trim();
+        if(code !== "THEREALHENDL"){
+          alert("❌ Kode salah! Masukkan kode RAHASIA untuk memulai race.");
+          return;
+        }
+        startRace();
+      });
+      resetBtn.addEventListener('click', reset);
+      rankBtn.addEventListener('click', buildAndShowRanking);
+
+      // Modal handlers
+      closeRank.addEventListener('click', hideRanking);
+      rankModal.addEventListener('click', (e)=>{ if(e.target === rankModal) hideRanking(); });
+      window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') hideRanking(); });
+
+      // Recalc distance on resize (when not running)
+      let resizeTimer;
+      window.addEventListener('resize', ()=>{
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(()=>{
+          if(raceState !== 'running'){
+            calcDistance();
+            ducks.forEach(d=>{
+              d.x = Math.min(d.x, distancePx);
+              d.el.style.setProperty('--x', `${d.x}px`);
+            });
+          }
+        }, 120);
+      });
+
+      // ==== Extra: Unlock audio di berbagai gesture & tab balik ====
+      ['click','touchstart','keydown'].forEach(evt=>{
+        window.addEventListener(evt, () => { if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }, { once:false, passive:true });
+      });
+      document.addEventListener('visibilitychange', () => {
+        if(document.visibilityState === 'visible' && audioCtx && audioCtx.state==='suspended'){
+          audioCtx.resume();
         }
       });
-      endRace('timecap');
-      return;
-    }
-
-    if(raceState === 'running') rafId = requestAnimationFrame(tick);
-  }
-
-  function endRace(reason){
-  raceState = 'done';
-  cancelAnimationFrame(rafId);
-
-  ducks.forEach(d=> d.el.querySelector('svg').style.animationPlayState = 'paused');
-
-  const winner = [...ducks].sort((a,b)=>a.finishTime - b.finishTime)[0];
-
-  /* === TAMBAHAN: efek juara (glow + fanfare + confetti) === */
-  if (winner && winner.el) {
-    // Glow & bounce
-    winner.el.classList.add('win');
-
-    // Suara fanfare (pastikan sebelumnya ada ensureAudio() saat Start)
-    if (typeof fanfare === 'function') fanfare();
-
-    // Confetti posisi dekat garis finish & bebek juara
-    const lanesRect  = lanesEl.getBoundingClientRect();
-    const finishRect = finishEl.getBoundingClientRect();
-    const duckRect   = winner.el.getBoundingClientRect();
-    const cx = finishRect.left - 6;                 // sedikit di kiri garis finish
-    const cy = duckRect.top + duckRect.height / 2;  // setinggi bebek
-    if (typeof spawnConfetti === 'function') spawnConfetti(cx, cy, 48);
-  }
-  /* === END TAMBAHAN === */
-
-  const timeStr = winner.finishTime.toFixed(2).replace(/\.00$/,'');
-  statusEl.textContent = `${reason==='all-finished' ? 'All finished.' : 'Time capped.'} Winner: ${winner.name} • ${timeStr}s`;
-  resultEl.classList.add('show');
-  resultEl.textContent = `🏆 ${winner.name} wins in ${timeStr}s ${reason==='timecap' ? '(time cap)' : ''}!`;
-  resetBtn.disabled = false;
-  rankBtn.disabled = false;
-
-  buildAndShowRanking();
-}
-
-
-  function rand(min, max){ return Math.random() * (max - min) + min; }
-
-  /* ===== Ranking ===== */
-  function buildRankingData(){
-    return ducks
-      .map(d => ({ id: d.id, name: d.name, time: d.finishTime ?? d.targetTime ?? MAX_RACE_S, finished: d.finishTime != null }))
-      .sort((a,b)=>a.time - b.time)
-      .map((row, idx)=>({
-        pos: idx+1,
-        name: row.name,
-        id: row.id,
-        timeStr: row.time.toFixed(2).replace(/\.00$/,''),
-        note: row.finished ? '✔ finished' : 'predicted'
-      }));
-  }
-
-  function buildAndShowRanking(){
-    const rows = buildRankingData();
-    rankTableBody.innerHTML = rows.map(r=>{
-      const medalClass = r.pos===1 ? 'gold' : r.pos===2 ? 'silver' : r.pos===3 ? 'bronze' : '';
-      const medal = r.pos===1 ? '🥇' : r.pos===2 ? '🥈' : r.pos===3 ? '🥉' : '';
-      return `<tr>
-        <td><span class="${medalClass}">${medal} ${r.pos}</span></td>
-        <td><span class="pill">${r.name}</span><span class="muted">#${r.id}</span></td>
-        <td>${r.timeStr}s</td>
-        <td>${r.note}</td>
-      </tr>`;
-    }).join('');
-    showRanking();
-  }
-
-  function showRanking(){
-  rankModal.classList.add('show'); // memicu fadeIn backdrop
-  const inner = rankModal.querySelector('.modal');
-  inner.classList.add('anim-in');
-  uiPop();
-}
-  function hideRanking(){
-  rankModal.classList.remove('show');
-  const inner = rankModal.querySelector('.modal');
-  inner.classList.remove('anim-in');
-}
-
-  // Build once
-  buildTrack();
-  document.querySelector('.badge').textContent = `${LANES} ducks • ${MAX_RACE_S}s max`;
-
-  // Controls
-startBtn.addEventListener('click', ()=>{
-  ensureAudio(); // <- tambah ini agar WebAudio siap (butuh user gesture)
-  const code = document.getElementById('codeInput').value.trim();
-  if(code !== "THEREALHENDL"){
-    alert("❌ Kode salah! Masukkan kode RAHASIA untuk memulai race.");
-    return;
-  }
-  startRace();
-});
-resetBtn.addEventListener('click', reset);
-rankBtn.addEventListener('click', buildAndShowRanking);
-
-
-  // Modal handlers
-  closeRank.addEventListener('click', hideRanking);
-  rankModal.addEventListener('click', (e)=>{ if(e.target === rankModal) hideRanking(); });
-  window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') hideRanking(); });
-
-  // Recalc distance on resize (when not running)
-  let resizeTimer;
-  window.addEventListener('resize', ()=>{
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(()=>{
-      if(raceState !== 'running'){
-        calcDistance();
-        ducks.forEach(d=>{
-          d.x = Math.min(d.x, distancePx);
-          d.el.style.setProperty('--x', `${d.x}px`);
-        });
-      }
-    }, 120);
-  });
-})();
-</script>
+    })();
+  </script>
 </body>
 </html>
