@@ -1,293 +1,646 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Duck River Race — 15s</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Duck River Race</title>
 <style>
-  :root{--bg:#0b1d3a;--panel:#101826;--accent:#ffd166;--text:#eaf2ff;--grass1:#2e7d32;--grass2:#1b5e20;--muted:#c9d7ff}
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-  .wrap{max-width:1100px;margin:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
-  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-  h1{font-size:clamp(22px,3vw,32px);margin:0;letter-spacing:.5px}
-  .controls{display:flex;gap:8px;flex-wrap:wrap}
-  button{background:var(--accent);color:#1b1b1b;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 4px 0 #caa94f;transition:transform .1s,opacity .2s}
-  button:hover{transform:translateY(-1px)}
-  button.secondary{background:#2b3750;color:#dbe8ff;box-shadow:none;border:1px solid #3d4a66}
-  button.ghost{background:transparent;border:1px solid #3d4a66;color:#dbe8ff}
-  button:disabled{opacity:.45;cursor:not-allowed;transform:none}
-  .board{background:var(--panel);border:1px solid #2a3550;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-  .banner{font-weight:800;letter-spacing:.5px}
-  .winner{color:#00e58f}
-  canvas{width:100%;height:auto;display:block;border-radius:14px;border:1px solid #203356;box-shadow:0 10px 24px rgba(0,0,0,.35)}
-  .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.35);backdrop-filter:blur(2px);z-index:5;pointer-events:none}
-  .overlay.show{display:flex}
-  .count{font-size:clamp(42px,8vw,108px);font-weight:900;letter-spacing:2px;padding:10px 24px;border-radius:16px;background:rgba(16,24,38,.85);border:1px solid #2a3550;box-shadow:0 12px 30px rgba(0,0,0,.4)}
-  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);z-index:6}
-  .modal.show{display:flex}
-  .card{width:min(960px,95vw);max-height:80vh;overflow:auto;background:#0f1726;border:1px solid #2a3550;border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.5);padding:10px 14px 16px}
-  .card h2{margin:8px 0 10px;font-size:clamp(20px,2.6vw,28px)}
-  .card .row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-  .card table{width:100%;border-collapse:collapse;font-size:14px}
-  .chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid #2a3550;border-radius:999px;background:#142039;color:var(--muted);font-weight:600;margin:4px 6px 0 0}
-  .dot{width:12px;height:12px;border-radius:50%}
-  details{background:#0e1a33;border:1px solid #24365b;border-radius:10px;padding:8px 10px;margin:8px 0}
-  details summary{cursor:pointer;font-weight:700;color:#dbe8ff}
-  .small{opacity:.8;font-size:12px}
+  :root{
+    --river-h: 560px;
+    --lanes: 10;
+    --lane-h: calc(var(--river-h) / var(--lanes));
+    --bank-h: 80px;
+    --pad: 18px;
+    --finish-w: 18px;
+    --duck-w: 72px;
+    --duck-h: 44px;
+    --max-race-s: 10; /* hard cap of 10 seconds */
+    --sky: #cfe8ff;
+    --water-1:#79c7ff;
+    --water-2:#5bb8ff;
+    --wave:#ffffff40;
+    --bank:#8bd17a;
+    --bank-edge:#6db15e;
+    --rock:#7a6e6a;
+    --tree:#2f7a34;
+    --trunk:#864f2a;
+    --line:#ffffff30;
+    --finish-dark:#333;
+    --finish-light:#eee;
+    --text:#0b1a2a;
+    --accent:#0a6efd;
+    --card:#ffffffd9;
+    --shadow: 0 10px 30px rgba(0,0,0,.18);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    color:var(--text);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #ffffff 0%, transparent 60%) ,
+      linear-gradient(#eaf5ff, #cfe8ff 60%, #c3e1ff);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+
+  .app{
+    width:min(1200px, 96vw);
+  }
+
+  .card{
+    background:var(--card);
+    backdrop-filter: blur(6px);
+    border-radius:22px;
+    box-shadow: var(--shadow);
+    padding:18px 18px 24px;
+  }
+
+  header{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:6px 6px 14px;
+  }
+  header h1{
+    margin:0;
+    font-weight:800;
+    letter-spacing:.2px;
+    font-size: clamp(18px, 2.4vw, 26px);
+  }
+  header .badge{
+    font-size:12px;
+    padding:6px 10px;
+    border-radius:999px;
+    background:#0a6efd14;
+    border:1px solid #0a6efd33;
+    color:#084298;
+    font-weight:600;
+  }
+
+  .controls{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px;
+    margin-bottom:12px;
+  }
+  button{
+    appearance:none;
+    border:none;
+    border-radius:12px;
+    padding:12px 16px;
+    font-weight:700;
+    cursor:pointer;
+    background:var(--accent);
+    color:white;
+    box-shadow: 0 6px 16px rgba(10,110,253,.25);
+    transition: transform .06s ease, filter .2s ease, opacity .2s ease;
+  }
+  button:hover{ filter:brightness(1.08) }
+  button:active{ transform: translateY(1px) }
+  button.secondary{
+    background:#11182710;
+    color:#0b1a2a;
+    border:1px solid #11182720;
+    box-shadow:none;
+  }
+  button:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+    transform:none;
+  }
+  .status{
+    margin-left:auto;
+    font-weight:700;
+    background:#11182708;
+    border:1px solid #11182720;
+    color:#0b1a2a;
+    padding:10px 12px;
+    border-radius:10px;
+    min-width:160px;
+    text-align:center;
+  }
+
+  .stage{
+    position:relative;
+    width:100%;
+    height: calc(var(--river-h) + var(--bank-h) * 2 + 12px);
+    overflow:hidden;
+    border-radius:18px;
+    border:1px solid #ffffff80;
+    background: linear-gradient(#e3f4ff, #d9eeff) no-repeat;
+  }
+
+  /* Banks (top & bottom) with scenery */
+  .bank{
+    position:absolute;
+    left:0; right:0;
+    height:var(--bank-h);
+    background:
+      radial-gradient(180px 40px at 10% 60%, #ffffff80, transparent 60%),
+      linear-gradient(180deg, var(--bank) 0%, var(--bank-edge) 100%);
+    z-index:2;
+    display:flex;
+    align-items:flex-end;
+    padding:0 10px 8px;
+    gap:12px;
+  }
+  .bank.top{ top:0; align-items:flex-start; padding:8px 10px 0; }
+  .bank .scenery{
+    display:flex;
+    gap:12px;
+    flex-wrap:nowrap;
+    width:100%;
+    justify-content:space-between;
+    opacity:.95;
+    filter: drop-shadow(0 2px 0 rgba(0,0,0,.12));
+  }
+  .tree{
+    width:36px; height:46px; position:relative;
+    animation: sway 3.5s ease-in-out infinite;
+    transform-origin: bottom center;
+  }
+  .tree .trunk{
+    position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+    width:8px; height:18px; background:var(--trunk); border-radius:3px;
+  }
+  .tree .crown{
+    position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
+    width:34px; height:28px; background:var(--tree); border-radius:50%;
+    box-shadow: 0 -10px 0 6px #34903a inset;
+  }
+  .rock{
+    width:32px; height:20px;
+    background:var(--rock);
+    border-radius: 40% 60% 45% 55% / 65% 60% 40% 50%;
+    transform: rotate(-6deg);
+    filter: brightness(.95);
+    animation: breathe 4s ease-in-out infinite;
+  }
+  @keyframes sway{
+    0%,100%{ transform: rotate(0deg) }
+    50%{ transform: rotate(-2deg) }
+  }
+  @keyframes breathe{
+    0%,100%{ transform: translateY(0) rotate(-6deg) }
+    50%{ transform: translateY(-1px) rotate(-7deg) }
+  }
+
+  /* River */
+  .river{
+    position:absolute;
+    top:var(--bank-h);
+    left:0; right:0;
+    height:var(--river-h);
+    background:
+      linear-gradient(180deg, var(--water-1), var(--water-2));
+    overflow:hidden;
+  }
+
+  /* Subtle water waves & ripples (two moving layers) */
+  .river::before,
+  .river::after{
+    content:"";
+    position:absolute; inset:0;
+    background-repeat: repeat;
+    pointer-events:none;
+  }
+  /* Wide, slow sine-like stripes */
+  .river::before{
+    background-image:
+      repeating-linear-gradient( to right,
+        transparent 0 80px,
+        var(--wave) 80px 84px,
+        transparent 84px 170px
+      );
+    animation: drift 9s linear infinite;
+  }
+  /* Soft circular ripples */
+  .river::after{
+    background-image:
+      radial-gradient(10px 6px at 10% 30%, #ffffff50 0 20%, transparent 21%),
+      radial-gradient(8px 5px at 30% 70%, #ffffff45 0 20%, transparent 21%),
+      radial-gradient(9px 6px at 55% 40%, #ffffff40 0 20%, transparent 21%),
+      radial-gradient(10px 6px at 80% 65%, #ffffff35 0 20%, transparent 21%);
+    animation: ripple 6s ease-in-out infinite;
+    opacity:.6;
+  }
+  @keyframes drift{
+    from{ background-position: 0 0 }
+    to{ background-position: 260px 0 }
+  }
+  @keyframes ripple{
+    0%,100%{ transform: translateX(0) translateY(0) }
+    50%{ transform: translateX(-20px) translateY(2px) }
+  }
+
+  /* Lanes & finish line */
+  .lanes{
+    position:absolute; inset:0;
+    padding: var(--pad);
+  }
+  .lane{
+    position:relative;
+    height: var(--lane-h);
+    border-bottom: 1px dashed var(--line);
+  }
+  .lane:last-child{ border-bottom:none }
+
+  .finish{
+    position:absolute;
+    top:var(--pad);
+    bottom:var(--pad);
+    right: calc(var(--pad) + 0px);
+    width:var(--finish-w);
+    background:
+      linear-gradient(90deg, #0000 0 45%, #0002 45% 55%, #0000 55% 100%),
+      repeating-linear-gradient(180deg,
+        var(--finish-light) 0 12px,
+        var(--finish-dark) 12px 24px);
+    border-left:1px solid #00000030;
+    border-right:1px solid #00000020;
+    z-index:4;
+    box-shadow: inset 0 0 0 1px #00000010;
+  }
+
+  /* Ducks */
+  .duck{
+    --x: 0px;
+    position:absolute;
+    left: var(--pad);
+    top:0;
+    width:var(--duck-w);
+    height:var(--duck-h);
+    transform: translateX(var(--x));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:3;
+  }
+  .duck .wake{
+    position:absolute;
+    left:-10px; right:6px; top:50%;
+    height: 10px;
+    transform: translateY(-50%);
+    background:
+      radial-gradient(10px 5px at right 50%, #ffffff55 0 50%, transparent 55%);
+    opacity:.5;
+    filter: blur(0.3px);
+    animation: wake 0.7s linear infinite;
+  }
+  @keyframes wake{
+    0%{ background-position: 0 0 }
+    100%{ background-position: 12px 0 }
+  }
+
+  .duck svg{
+    width:var(--duck-w);
+    height:var(--duck-h);
+    overflow:visible;
+    animation: bob 1.2s ease-in-out infinite;
+  }
+  @keyframes bob{
+    0%,100%{ transform: translateY(0) }
+    50%{ transform: translateY(3px) }
+  }
+
+  /* Lane numbers */
+  .lane .num{
+    position:absolute;
+    left:4px; top:6px;
+    font-size: 12px;
+    font-weight:800;
+    color:#083b6b80;
+    user-select:none;
+  }
+
+  /* Result banner */
+  .result{
+    margin-top:14px;
+    padding:12px 14px;
+    border-radius:12px;
+    background:#10b98118;
+    border:1px solid #10b98155;
+    color:#065f46;
+    font-weight:700;
+    display:none;
+  }
+  .result.show{ display:block }
+
+  /* Helper: small text */
+  .hint{
+    font-size:12px;
+    color:#0b1a2a99;
+    margin-left:6px;
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 720px){
+    :root{
+      --river-h: 520px;
+      --bank-h: 70px;
+      --duck-w: 64px;
+      --duck-h: 40px;
+      --pad: 12px;
+    }
+    .status{ min-width:unset }
+  }
 </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="app card">
     <header>
-      <h1>Duck River Race</h1>
-      <div class="controls">
-        <button id="startBtn">Start Race</button>
-        <button id="pauseBtn" class="secondary" disabled>Pause</button>
-        <button id="resetBtn" class="secondary" disabled>Reset</button>
-        <button id="historyBtn" class="ghost">History</button>
-      </div>
+      <h1>🏁 Duck River Race</h1>
+      <div class="badge">10 ducks • 10s max</div>
     </header>
 
-    <div class="board">
-      <div>Durasi balapan: <b>15 detik</b>. Tekan <b>Start Race</b> untuk mulai. Pertama ke finish menang; jika 15s habis, peringkat diambil dari posisi terdepan.</div>
-      <div id="status" class="banner">Ready…</div>
+    <div class="controls">
+      <button id="startBtn">Start Race</button>
+      <button id="resetBtn" class="secondary" disabled>Reset</button>
+      <div class="status" id="status">Ready</div>
+      <span class="hint">Tip: resize window then press Reset to re-calc distance.</span>
     </div>
 
-    <canvas id="race" width="1200" height="700" aria-label="Duck racing river canvas"></canvas>
-  </div>
-
-  <div id="overlay" class="overlay" aria-hidden="true">
-    <div id="count" class="count">3</div>
-  </div>
-
-  <div id="historyModal" class="modal" aria-hidden="true">
-    <div class="card">
-      <div class="row">
-        <h2>Race History</h2>
-        <div class="controls">
-          <button id="clearHistoryBtn" class="secondary">Clear History</button>
-          <button id="closeHistoryBtn" class="secondary">Close</button>
+    <div class="stage" id="stage">
+      <!-- Top bank with scenery -->
+      <div class="bank top">
+        <div class="scenery">
+          <div class="tree"><div class="trunk"></div><div class="crown"></div></div>
+          <div class="rock"></div>
+          <div class="tree"><div class="trunk"></div><div class="crown"></div></div>
+          <div class="rock"></div>
+          <div class="tree"><div class="trunk"></div><div class="crown"></div></div>
+          <div class="rock"></div>
+          <div class="tree"><div class="trunk"></div><div class="crown"></div></div>
         </div>
       </div>
-      <div id="historyBody"></div>
+
+      <!-- River -->
+      <div class="river" id="river">
+        <div class="lanes" id="lanes"></div>
+        <div class="finish" id="finish"></div>
+      </div>
+
+      <!-- Bottom bank with scenery -->
+      <div class="bank bottom">
+        <div class="scenery">
+          <div class="rock"></div>
+          <div class="tree"><div class="trunk"></div><div class="crown"></div></div>
+          <div class="rock"></div>
+          <div class="tree"><div class="trunk"></div><div class="crown"></div></div>
+          <div class="rock"></div>
+          <div class="tree"><div class="trunk"></div><div class="crown"></div></div>
+          <div class="rock"></div>
+        </div>
+      </div>
     </div>
+
+    <div class="result" id="result"></div>
   </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('[DuckRace] DOM ready');
-  const canvas = document.getElementById('race');
-  const ctx = canvas.getContext('2d');
+(() => {
+  const LANES = 10;
+  const MAX_RACE_S = 10;           // hard cap of 10 seconds
+  const MIN_FINISH_S = 7.0;        // random winner can finish as early as 7s
+  const DUCK_W = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--duck-w')) || 72;
 
-  const statusEl   = document.getElementById('status');
-  const startBtn   = document.getElementById('startBtn');
-  const pauseBtn   = document.getElementById('pauseBtn');
-  const resetBtn   = document.getElementById('resetBtn');
-  const historyBtn = document.getElementById('historyBtn');
+  const lanesEl = document.getElementById('lanes');
+  const finishEl = document.getElementById('finish');
+  const startBtn = document.getElementById('startBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const statusEl = document.getElementById('status');
+  const resultEl = document.getElementById('result');
+  const stageEl = document.getElementById('stage');
 
-  const overlay = document.getElementById('overlay');
-  const countEl = document.getElementById('count');
+  let raceState = 'idle'; // 'idle' | 'running' | 'done'
+  let ducks = [];
+  let rafId = null;
+  let startTime = 0;
+  let winner = null;
+  let distancePx = 0;
 
-  const historyModal    = document.getElementById('historyModal');
-  const closeHistoryBtn = document.getElementById('closeHistoryBtn');
-  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
-  const historyBody     = document.getElementById('historyBody');
+  // Build lanes + ducks
+  function buildTrack(){
+    lanesEl.innerHTML = '';
+    ducks = [];
+    for(let i=0;i<LANES;i++){
+      const lane = document.createElement('div');
+      lane.className = 'lane';
+      lane.style.top = `calc(${i} * var(--lane-h))`;
+      const num = document.createElement('div');
+      num.className = 'num';
+      num.textContent = `#${i+1}`;
+      lane.appendChild(num);
 
-  // Hi-DPI fit (tahan banting)
-  let scale = 1;
-  function fitHiDPI() {
-    const ratio = Math.max(1, Math.floor(window.devicePixelRatio || 1));
-    const rect = canvas.getBoundingClientRect();
-    let cssW = Math.round(rect.width);
-    if (!cssW) cssW = Math.min(window.innerWidth, 1100); // fallback
-    const cssH = Math.round(cssW * (canvas.height / canvas.width));
-    canvas.style.height = cssH + 'px';
-    canvas.width = cssW * ratio;
-    canvas.height = cssH * ratio;
-    scale = ratio;
-  }
-  fitHiDPI();
-  window.addEventListener('resize', () => { fitHiDPI(); generateScenery(); draw(); });
+      const duck = document.createElement('div');
+      duck.className = 'duck';
+      duck.style.top = `calc(${i} * var(--lane-h) + (var(--lane-h) - var(--duck-h)) / 2)`;
+      duck.style.setProperty('--x', '0px');
+      duck.innerHTML = `
+        <div class="wake"></div>
+        ${duckSVG()}
+      `;
+      lane.appendChild(duck);
 
-  // Konstanta & state
-  const RACE_LIMIT = 15;
-  const DUCK_COUNT = 10;
-  const margin = 60;
-  const finishOffset = 110;
-  const riverPadding = 20;
-  const colors = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#16a085','#f1c40f','#e84393','#8e6e53','#1abc9c'];
-
-  const ducks = [];
-  let running=false, paused=false, winner=null, lastTime=0, countingDown=false;
-  let finishOrder=[], finishTimes={};
-
-  let raceIndex = Number(localStorage.getItem('duck_race_lastIndex') || 0);
-  let history = [];
-  try { history = JSON.parse(localStorage.getItem('duck_race_history_v1') || '[]'); } catch(_) { history = []; }
-
-  let trees=[], rocks=[];
-
-  function rand(a,b){ return Math.random()*(b-a)+a; }
-  function pseudoNoise(t){ return Math.sin(t*1.3)*0.6 + Math.sin(t*0.7+2.13)*0.4; }
-
-  function resetRace() {
-    console.log('[DuckRace] resetRace()');
-    ducks.length = 0; winner=null; running=false; paused=false; countingDown=false;
-    finishOrder=[]; finishTimes={}; lastTime = performance.now();
-    startBtn.disabled=false; pauseBtn.disabled=true; resetBtn.disabled=true; pauseBtn.textContent='Pause';
-    statusEl.textContent='Ready…';
-
-    const W = canvas.width/scale, H = canvas.height/scale;
-    const riverTop=margin, riverBot=H-margin, riverH=riverBot-riverTop, laneH=riverH/DUCK_COUNT;
-
-    for (let i=0;i<DUCK_COUNT;i++){
-      const y = riverTop + laneH*(i+0.5);
-      ducks.push({ id:i+1, color:colors[i%colors.length], x: margin+10, y, baseSpeed:rand(90,120), jitter:rand(20,40), noiseT:Math.random()*1000 });
+      lanesEl.appendChild(lane);
+      ducks.push({
+        id: i+1,
+        el: duck,
+        x: 0,
+        speed: 0,       // px/s
+        finished: false,
+        finishTime: null,
+      });
     }
-    generateScenery();
-    draw(); // gambar awal supaya terlihat
+    calcDistance();
   }
 
-  function generateScenery(){
-    const W = canvas.width/scale, H = canvas.height/scale;
-    const usableLeft = riverPadding+20, usableRight = W-riverPadding-40;
-    const bankTopYMin=18, bankTopYMax=Math.max(22,margin-12);
-    const bankBotYMin=H-margin+12, bankBotYMax=H-18;
-    trees=[]; rocks=[];
-    for (let i=0;i<10;i++){ trees.push({x:rand(usableLeft,usableRight),y:rand(bankTopYMin,bankTopYMax),s:rand(.8,1.2)}); trees.push({x:rand(usableLeft,usableRight),y:rand(bankBotYMin,bankBotYMax),s:rand(.8,1.2)}); }
-    for (let i=0;i<8;i++){ rocks.push({x:rand(usableLeft,usableRight),y:rand(bankTopYMin,bankTopYMax),s:rand(.7,1.3)}); rocks.push({x:rand(usableLeft,usableRight),y:rand(bankBotYMin,bankBotYMax),s:rand(.7,1.3)}); }
+  function calcDistance(){
+    // distance from duck left to finish inner left minus duck width
+    const pad = parseFloat(getComputedStyle(lanesEl).paddingLeft) || 12;
+    const lanesRect = lanesEl.getBoundingClientRect();
+    const finishRect = finishEl.getBoundingClientRect();
+    distancePx = (finishRect.left - lanesRect.left) - pad - DUCK_W - 6; // 6px margin from line
   }
 
-  // Gambar
-  function drawBanks(){
-    const W=canvas.width/scale,H=canvas.height/scale;
-    const gTop=ctx.createLinearGradient(0,0,0,margin); gTop.addColorStop(0,'var(--grass1)'); gTop.addColorStop(1,'var(--grass2)'); ctx.fillStyle=gTop; ctx.fillRect(0,0,W,margin);
-    const gBot=ctx.createLinearGradient(0,H-margin,0,H); gBot.addColorStop(0,'var(--grass2)'); gBot.addColorStop(1,'var(--grass1)'); ctx.fillStyle=gBot; ctx.fillRect(0,H-margin,W,margin);
+  // SVG for the duck (inline, cute yellow duck)
+  function duckSVG(){
+    return `
+    <svg viewBox="0 0 120 60" aria-hidden="true">
+      <defs>
+        <linearGradient id="b" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#ffde59"/>
+          <stop offset="1" stop-color="#ffc83d"/>
+        </linearGradient>
+        <linearGradient id="w" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffd94a"/>
+          <stop offset="1" stop-color="#ffbd2e"/>
+        </linearGradient>
+      </defs>
+      <!-- subtle wake bubbles -->
+      <g opacity="0.16">
+        <ellipse cx="12" cy="40" rx="6" ry="3" fill="#fff"/>
+        <ellipse cx="20" cy="42" rx="4.5" ry="2.2" fill="#fff"/>
+      </g>
+      <!-- body -->
+      <ellipse cx="56" cy="35" rx="34" ry="18" fill="url(#b)" stroke="#cc9f15" stroke-width="1.2"/>
+      <!-- tail -->
+      <path d="M26 34 q-10 -4 -12 -10 q10 4 20 1" fill="url(#w)" stroke="#cc9f15" stroke-width="1"/>
+      <!-- wing -->
+      <path d="M47 30 q-6 6 -5 12 q8 2 18 -2 q-6 -6 -13 -10z" fill="#ffd34a" stroke="#cc9f15" stroke-width="1" opacity=".9"/>
+      <!-- head -->
+      <circle cx="78" cy="26" r="12" fill="url(#w)" stroke="#cc9f15" stroke-width="1.2"/>
+      <!-- eye -->
+      <circle cx="81.5" cy="23.5" r="2.2" fill="#1a2332"/>
+      <circle cx="80.7" cy="23" r="0.8" fill="#fff"/>
+      <!-- beak -->
+      <path d="M90 26 q10 2 12 4 q-6 4 -13 1 z" fill="#ff8c3a" stroke="#cc6f1f" stroke-width="1"/>
+      <!-- chin shadow -->
+      <ellipse cx="76" cy="31.5" rx="6" ry="2" fill="#00000010"/>
+    </svg>`;
   }
-  function drawTree(x,y,s){ ctx.save(); ctx.translate(x,y); ctx.scale(s,s); ctx.fillStyle='#7b4f2f'; ctx.fillRect(-6,-8,12,18); ctx.fillStyle='#2ecc71'; ctx.beginPath(); ctx.arc(0,-22,16,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(-12,-16,14,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(12,-16,14,0,Math.PI*2); ctx.fill(); ctx.restore(); }
-  function drawRock(x,y,s){ ctx.save(); ctx.translate(x,y); ctx.scale(s,s); ctx.beginPath(); ctx.ellipse(0,0,18,12,0,0,Math.PI*2); const g=ctx.createRadialGradient(-6,-4,1,0,0,20); g.addColorStop(0,'#c9d1d9'); g.addColorStop(1,'#6b7b8a'); ctx.fillStyle=g; ctx.fill(); ctx.restore(); }
-  function drawScenery(){ for(const t of trees) drawTree(t.x,t.y,t.s); for(const r of rocks) drawRock(r.x,r.y,r.s); }
-  function drawRiverBase(){ const W=canvas.width/scale,H=canvas.height/scale; const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#0b3a63'); g.addColorStop(1,'#0c5f8e'); ctx.fillStyle=g; ctx.fillRect(riverPadding,margin,W-riverPadding*2,H-margin*2); ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=3; ctx.strokeRect(riverPadding,margin,W-riverPadding*2,H-margin*2); }
-  function drawWaves(t){ const W=canvas.width/scale,H=canvas.height/scale,x0=riverPadding,x1=W-riverPadding,y0=margin,y1=H-margin,waterH=y1-y0; for(let i=0;i<6;i++){ const y=y0+(i+.5)/6*waterH; ctx.beginPath(); for(let x=x0;x<=x1;x+=8){ const k=.025+i*.002,amp=3+i*.5; const yW=y+Math.sin(x*k+t*.9+i)*amp; if(x===x0) ctx.moveTo(x,yW); else ctx.lineTo(x,yW);} ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1.5; ctx.stroke(); } }
-  function drawLanesAndFinish(){ const W=canvas.width/scale,H=canvas.height/scale,laneH=(H-margin*2)/DUCK_COUNT; ctx.lineWidth=2; ctx.strokeStyle='rgba(255,255,255,.15)'; for(let i=1;i<DUCK_COUNT;i++){ const y=margin+laneH*i; ctx.beginPath(); ctx.moveTo(riverPadding,y); ctx.lineTo(W-riverPadding,y); ctx.stroke(); } const finishX=W-finishOffset; for(let y=margin;y<H-margin;y+=12){ ctx.fillStyle=(Math.floor(y/12)%2===0)?'rgba(255,255,255,.95)':'rgba(0,0,0,.65)'; ctx.fillRect(finishX,y,12,8);} ctx.fillStyle='rgba(255,255,255,.7)'; ctx.fillRect(finishX-3,margin,3,H-margin*2); }
-  function roundRect(x,y,w,h,r,fill){ const rr=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+rr,y); ctx.arcTo(x+w,y,x+w,y+h,rr); ctx.arcTo(x+w,y+h,x,y+h,rr); ctx.arcTo(x,y+h,x,y,rr); ctx.arcTo(x,y,x+w,y,rr); if(fill) ctx.fill(); }
-  function drawDuck(d,t){ const bodyL=80, bodyH=32, headR=16; const bob=Math.sin(t*2+d.id)*2; ctx.save(); ctx.translate(d.x,d.y+bob); ctx.beginPath(); ctx.ellipse(-20, bodyH/2+8, 22,6,0,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,.12)'; ctx.fill(); ctx.fillStyle=d.color; roundRect(-bodyL/2,-bodyH/2,bodyL,bodyH,14,true); ctx.beginPath(); ctx.arc(bodyL/2-12,-bodyH/2+headR-4,headR,0,Math.PI*2); ctx.fill(); ctx.beginPath(); const bx=bodyL/2+2,by=-bodyH/2+headR-4; ctx.moveTo(bx,by); ctx.lineTo(bx+16,by-6); ctx.lineTo(bx+16,by+6); ctx.closePath(); ctx.fillStyle='#ffb703'; ctx.fill(); ctx.beginPath(); ctx.arc(bodyL/2-4,-bodyH/2+headR-10,3.5,0,Math.PI*2); ctx.fillStyle='#101010'; ctx.fill(); ctx.beginPath(); ctx.ellipse(0,0,18,18,0,0,Math.PI*2); ctx.fillStyle='rgba(0,0,0,.45)'; ctx.fill(); ctx.font='bold 16px system-ui,Segoe UI,Roboto'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle='#fff'; ctx.strokeStyle='rgba(0,0,0,.6)'; ctx.lineWidth=3; ctx.strokeText(String(d.id),0,0); ctx.fillText(String(d.id),0,0); ctx.restore(); }
 
-  // Timing
-  const startClock = { t0:0, now:0 }; function raceTime(){ return (startClock.now - startClock.t0)/1000; }
+  function reset(){
+    cancelAnimationFrame(rafId);
+    winner = null;
+    raceState = 'idle';
+    statusEl.textContent = 'Ready';
+    resultEl.classList.remove('show');
+    resultEl.textContent = '';
 
-  function update(dt){
-    if (!running || paused) return;
-    const W = canvas.width/scale, finishX = W - finishOffset;
+    // Reset positions
+    ducks.forEach(d => {
+      d.x = 0;
+      d.speed = 0;
+      d.finished = false;
+      d.finishTime = null;
+      d.el.style.setProperty('--x', '0px');
+      // re-enable gentle bob animation
+      d.el.querySelector('svg').style.animationPlayState = 'running';
+    });
 
-    for (const d of ducks){
-      if (finishTimes[d.id] !== undefined) continue;
-      d.noiseT += dt*0.0015;
-      const n = pseudoNoise(d.noiseT);
-      const pxPerSec = d.baseSpeed + n*d.jitter;
-      d.x += Math.max(30, pxPerSec) * dt / 1000;
+    startBtn.disabled = false;
+    resetBtn.disabled = true;
+  }
 
-      if (d.x + 80/2 >= finishX){
-        const t = raceTime();
-        finishTimes[d.id] = t;
-        finishOrder.push(d.id);
-        if (!winner){ winner=d; statusEl.innerHTML = `<span class="winner">Duck #${d.id}</span> takes the lead!`; }
-        if (finishOrder.length === DUCK_COUNT){ finalizeByOrder(finishOrder.slice(), finishTimes, `Duck #${finishOrder[0]} wins!`); return; }
+  function startRace(){
+    if(raceState === 'running') return;
+    calcDistance();
+
+    // Assign a target finish time for each duck between MIN_FINISH_S..MAX_RACE_S (random)
+    ducks.forEach(d => {
+      const tf = rand(MIN_FINISH_S, MAX_RACE_S); // seconds
+      d.speed = distancePx / tf;                 // px/s
+      d.x = 0;
+      d.finished = false;
+      d.finishTime = null;
+      // small per-duck bob phase offset
+      d.el.querySelector('svg').style.animationDelay = `${rand(0,0.8).toFixed(2)}s`;
+    });
+
+    // tiny lane-based variability (drafting / wiggle over time)
+    startTime = performance.now();
+    raceState = 'running';
+    startBtn.disabled = true;
+    resetBtn.disabled = true;
+    statusEl.textContent = 'Racing… 0.00s';
+    resultEl.classList.remove('show');
+
+    // animate
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function tick(now){
+    const elapsed = (now - startTime) / 1000; // seconds
+    if (raceState !== 'running') return;
+
+    // Update ducks
+    ducks.forEach((d, i) => {
+      if(d.finished) return;
+      // slight ±2% jiggle to speed to feel organic
+      const jiggle = 1 + Math.sin((elapsed + i * 0.37) * 2.3) * 0.02;
+      d.x = Math.min(distancePx, d.speed * elapsed * jiggle);
+      d.el.style.setProperty('--x', `${d.x}px`);
+
+      if(d.x >= distancePx && !d.finished){
+        d.finished = true;
+        d.finishTime = Math.min(elapsed, MAX_RACE_S);
+        if(!winner){
+          winner = d;
+          endRace('winner');
+        }
       }
+    });
+
+    // Update status timer
+    if(!winner){
+      statusEl.textContent = `Racing… ${elapsed.toFixed(2)}s`;
     }
-  }
 
-  function timeUpFinalize(){
-    const finishedSet = new Set(finishOrder);
-    const pending = ducks.filter(d => !finishedSet.has(d.id)).sort((a,b)=>b.x-a.x).map(d=>d.id);
-    const order = finishOrder.concat(pending);
-    for (const id of pending) finishTimes[id] = RACE_LIMIT;
-    finalizeByOrder(order, finishTimes, `Time's up! Duck #${order[0]} leads at 15.00s.`);
-  }
-
-  function finalizeByOrder(order, times, message){
-    running=false; paused=false;
-    const rec = { id: ++raceIndex, ts: Date.now(), order: order.slice(), times: times, winner: order[0]||null, limit:RACE_LIMIT };
-    let hist = []; try{ hist = JSON.parse(localStorage.getItem('duck_race_history_v1')||'[]'); }catch(_){ hist=[]; }
-    hist.unshift(rec); hist = hist.slice(0,50);
-    localStorage.setItem('duck_race_history_v1', JSON.stringify(hist));
-    localStorage.setItem('duck_race_lastIndex', String(raceIndex));
-    statusEl.innerHTML = `<span class="winner">${message}</span> Race #${rec.id} saved.`;
-    startBtn.disabled=false; pauseBtn.disabled=true; resetBtn.disabled=false;
-  }
-
-  function draw(){
-    ctx.setTransform(scale,0,0,scale,0,0);
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    drawBanks(); for(const t of trees) drawTree(t.x,t.y,t.s); for(const r of rocks) drawRock(r.x,r.y,r.s);
-    drawRiverBase(); drawWaves(performance.now()/1000); drawLanesAndFinish();
-    const t = performance.now()/1000; for(const d of ducks) drawDuck(d,t);
-  }
-
-  function loop(ts){
-    if (!lastTime) lastTime = ts;
-    const dt = ts - lastTime; lastTime = ts;
-    if (running && !paused){
-      startClock.now = ts;
-      const elapsed = raceTime();
-      update(dt);
-      statusEl.textContent = `Racing… ${Math.min(elapsed, RACE_LIMIT).toFixed(1)}/${RACE_LIMIT}s`;
-      if (elapsed >= RACE_LIMIT && !winner){ timeUpFinalize(); }
+    // Stop if reached hard limit (10s) with no winner (fallback)
+    if(elapsed >= MAX_RACE_S && !winner){
+      // pick farthest as winner
+      const leader = [...ducks].sort((a,b)=>b.x - a.x)[0];
+      leader.finished = true;
+      leader.finishTime = MAX_RACE_S;
+      winner = leader;
+      endRace('timecap');
+      return;
     }
-    draw();
-    requestAnimationFrame(loop);
+
+    if(raceState === 'running') rafId = requestAnimationFrame(tick);
   }
 
-  // Countdown & start
-  let countdownTimer=null;
-  function startCountdown(){
-    if (countingDown || running) return;
-    countingDown=true;
-    draw();
-    canvas.scrollIntoView({ behavior:'smooth', block:'center' });
-    overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false');
-    const steps=['3','2','1','GO!']; let i=0; countEl.textContent=steps[0];
-    startBtn.disabled=true; pauseBtn.disabled=true; resetBtn.disabled=true;
-    countdownTimer=setInterval(()=>{ countEl.textContent=steps[++i]||'GO!'; if(i>=steps.length-1){ clearInterval(countdownTimer); setTimeout(()=>{ overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); beginRace(); },450); } },700);
-  }
-  function beginRace(){
-    running=true; paused=false; countingDown=false;
-    statusEl.textContent=`Racing… 0.0/${RACE_LIMIT}s`;
-    startClock.t0 = performance.now(); startClock.now = startClock.t0;
-    pauseBtn.disabled=false; resetBtn.disabled=false;
+  function endRace(reason){
+    raceState = 'done';
+    cancelAnimationFrame(rafId);
+
+    // Pause bobbing on winner, keep others bobbing
+    ducks.forEach(d=>{
+      const svg = d.el.querySelector('svg');
+      svg.style.animationPlayState = (d === winner) ? 'paused' : 'running';
+    });
+
+    const timeStr = winner.finishTime.toFixed(2).replace(/\.00$/,'');
+    statusEl.textContent = `Winner: Duck #${winner.id} • ${timeStr}s`;
+    resultEl.classList.add('show');
+    resultEl.textContent = `🏆 Duck #${winner.id} wins in ${timeStr}s ${reason==='timecap' ? '(time cap)' : ''}!`;
+    resetBtn.disabled = false;
   }
 
-  // History UI
-  function msToClock(s){ return (Math.round(s*100)/100).toFixed(2)+'s'; }
-  function renderHistory(){
-    let hist=[]; try{ hist=JSON.parse(localStorage.getItem('duck_race_history_v1')||'[]'); }catch(_){ hist=[]; }
-    if (!hist.length){ historyBody.innerHTML='<p class="small">Belum ada race.</p>'; return; }
-    const colors=['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#16a085','#f1c40f','#e84393','#8e6e53','#1abc9c'];
-    const rows = hist.map(rec=>{
-      const detail = rec.order.map((id,idx)=>`
-        <span class="chip"><span class="dot" style="background:${colors[(id-1)%colors.length]}"></span>
-        <b>#${String(idx+1).padStart(2,'0')}</b> Duck ${id} <span class="small">(${msToClock(rec.times[id])})</span></span>`).join('');
-      return `<details><summary><span class="chip"><span class="dot" style="background:${colors[(rec.winner-1)%colors.length]}"></span>Race #${rec.id} — Winner: Duck ${rec.winner}</span>
-              <span class="small"> • ${new Date(rec.ts).toLocaleString()}</span></summary>
-              <div style="margin-top:8px;display:flex;flex-wrap:wrap">${detail}</div></details>`;
-    }).join('');
-    historyBody.innerHTML = rows;
+  function rand(min, max){
+    return Math.random() * (max - min) + min;
   }
 
-  // Events
-  startBtn.addEventListener('click', () => { console.log('[DuckRace] Start clicked'); if (winner || finishOrder.length) resetRace(); if (!countingDown && !running) startCountdown(); });
-  pauseBtn.addEventListener('click', () => { if (!running) return; paused=!paused; pauseBtn.textContent=paused?'Resume':'Pause'; statusEl.textContent = paused ? 'Paused.' : `Racing… ${Math.min(raceTime(),RACE_LIMIT).toFixed(1)}/${RACE_LIMIT}s`; });
-  resetBtn.addEventListener('click', () => { if (countdownTimer){ clearInterval(countdownTimer); countdownTimer=null; } overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); resetRace(); });
-  historyBtn.addEventListener('click', () => { renderHistory(); historyModal.classList.add('show'); historyModal.setAttribute('aria-hidden','false'); });
-  document.getElementById('closeHistoryBtn').addEventListener('click', () => { historyModal.classList.remove('show'); historyModal.setAttribute('aria-hidden','true'); });
-  document.getElementById('clearHistoryBtn').addEventListener('click', () => { if (!confirm('Hapus semua history balapan?')) return; localStorage.removeItem('duck_race_history_v1'); localStorage.removeItem('duck_race_lastIndex'); raceIndex=0; renderHistory(); });
+  // Build once
+  buildTrack();
 
-  historyModal.addEventListener('click', (e)=>{ if(e.target===historyModal){ historyModal.classList.remove('show'); historyModal.setAttribute('aria-hidden','true'); } });
+  // Handle controls
+  startBtn.addEventListener('click', startRace);
+  resetBtn.addEventListener('click', reset);
 
-  // Boot
-  resetRace();
-  requestAnimationFrame(loop);
-});
+  // Recalculate on resize (keep positions sane)
+  let resizeTimer;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(()=>{
+      if(raceState !== 'running'){
+        calcDistance();
+        // snap duck x back within new distance
+        ducks.forEach(d=>{
+          d.x = Math.min(d.x, distancePx);
+          d.el.style.setProperty('--x', `${d.x}px`);
+        });
+      }
+    }, 120);
+  });
+})();
 </script>
 </body>
 </html>
