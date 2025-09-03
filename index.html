@@ -32,10 +32,11 @@
     --card:#ffffffd9;
     --shadow: 0 10px 30px rgba(0,0,0,.18);
   }
+
   *{box-sizing:border-box}
   body{
     margin:0;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans";
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     color:var(--text);
     background:
       radial-gradient(1200px 600px at 50% -10%, #ffffff 0%, transparent 60%) ,
@@ -46,6 +47,7 @@
     justify-content:center;
     padding:24px;
   }
+
   .app{ width:min(1200px, 96vw); }
   .card{
     background:var(--card);
@@ -54,6 +56,7 @@
     box-shadow: var(--shadow);
     padding:18px 18px 24px;
   }
+
   header{
     display:flex; align-items:center; gap:14px; padding:6px 6px 14px;
   }
@@ -62,6 +65,7 @@
     font-size:12px; padding:6px 10px; border-radius:999px;
     background:#0a6efd14; border:1px solid #0a6efd33; color:#084298; font-weight:600;
   }
+
   .controls{
     display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:12px;
   }
@@ -82,7 +86,7 @@
   button:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
   .status{
     margin-left:auto; font-weight:700; background:#11182708; border:1px solid #11182720;
-    color:#0b1a2a; padding:10px 12px; border-radius:10px; min-width:160px; text-align:center;
+    color:#0b1a2a; padding:10px 12px; border-radius:10px; min-width:200px; text-align:center;
   }
 
   .stage{
@@ -92,7 +96,7 @@
     background: linear-gradient(#e3f4ff, #d9eeff) no-repeat;
   }
 
-  /* Banks */
+  /* Banks (top & bottom) with scenery */
   .bank{
     position:absolute; left:0; right:0; height:var(--bank-h);
     background:
@@ -101,8 +105,11 @@
     z-index:2; display:flex; align-items:flex-end; padding:0 10px 8px; gap:12px;
   }
   .bank.top{ top:0; align-items:flex-start; padding:8px 10px 0; }
-  .bank .scenery{ display:flex; gap:12px; width:100%; justify-content:space-between; opacity:.95;
-    filter: drop-shadow(0 2px 0 rgba(0,0,0,.12)); }
+  .bank .scenery{
+    display:flex; gap:12px; flex-wrap:nowrap; width:100%;
+    justify-content:space-between; opacity:.95;
+    filter: drop-shadow(0 2px 0 rgba(0,0,0,.12));
+  }
   .tree{ width:36px; height:46px; position:relative; animation: sway 3.5s ease-in-out infinite; transform-origin: bottom center; }
   .tree .trunk{ position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:8px; height:18px; background:var(--trunk); border-radius:3px; }
   .tree .crown{ position:absolute; bottom:10px; left:50%; transform:translateX(-50%); width:34px; height:28px; background:var(--tree); border-radius:50%; box-shadow: 0 -10px 0 6px #34903a inset; }
@@ -111,11 +118,17 @@
   @keyframes breathe{ 0%,100%{ transform: translateY(0) rotate(-6deg) } 50%{ transform: translateY(-1px) rotate(-7deg) } }
 
   /* River */
-  .river{ position:absolute; top:var(--bank-h); left:0; right:0; height:var(--river-h);
-    background: linear-gradient(180deg, var(--water-1), var(--water-2)); overflow:hidden; }
-  .river::before, .river::after{ content:""; position:absolute; inset:0; background-repeat: repeat; pointer-events:none; }
+  .river{
+    position:absolute; top:var(--bank-h); left:0; right:0; height:var(--river-h);
+    background: linear-gradient(180deg, var(--water-1), var(--water-2));
+    overflow:hidden;
+  }
+  .river::before, .river::after{
+    content:""; position:absolute; inset:0; background-repeat: repeat; pointer-events:none;
+  }
   .river::before{
-    background-image: repeating-linear-gradient( to right, transparent 0 80px, var(--wave) 80px 84px, transparent 84px 170px );
+    background-image:
+      repeating-linear-gradient( to right, transparent 0 80px, var(--wave) 80px 84px, transparent 84px 170px );
     animation: drift 9s linear infinite;
   }
   .river::after{
@@ -129,10 +142,11 @@
   @keyframes drift{ from{ background-position: 0 0 } to{ background-position: 260px 0 } }
   @keyframes ripple{ 0%,100%{ transform: translateX(0) translateY(0) } 50%{ transform: translateX(-20px) translateY(2px) } }
 
-  /* Lanes & finish */
+  /* Lanes & finish line */
   .lanes{ position:absolute; inset:0; padding: var(--pad); }
   .lane{ position:relative; height: var(--lane-h); border-bottom: 1px dashed var(--line); }
   .lane:last-child{ border-bottom:none }
+
   .finish{
     position:absolute; top:var(--pad); bottom:var(--pad); right: calc(var(--pad) + 0px);
     width:var(--finish-w);
@@ -171,13 +185,10 @@
   .modal .table{ width:100%; border-collapse: collapse; }
   .modal .table th, .modal .table td{ text-align:left; padding:10px 12px; border-bottom:1px solid #f0f2f5; font-size:14px; }
   .modal .table th{ background:#f8fafc; font-weight:800; }
-  .pill{
-    display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800; background:#eef2ff; color:#3730a3; border:1px solid #e0e7ff;
-  }
+  .pill{ display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800; background:#eef2ff; color:#3730a3; border:1px solid #e0e7ff; }
   .close-x{ background:#f3f4f6; color:#111827; border:1px solid #e5e7eb; }
-  .gold{ color:#b45309; }
-  .silver{ color:#4b5563; }
-  .bronze{ color:#92400e; }
+  .gold{ color:#b45309; } .silver{ color:#4b5563; } .bronze{ color:#92400e; }
+
   @media (max-width: 720px){
     :root{ --river-h: 520px; --bank-h: 70px; --duck-w: 64px; --duck-h: 40px; --pad: 12px; }
     .status{ min-width:unset }
@@ -258,7 +269,7 @@
 (() => {
   const LANES = 10;
   const MAX_RACE_S = 10;           // hard cap of 10 seconds
-  const MIN_FINISH_S = 7.0;        // earliest winner
+  const MIN_FINISH_S = 7.0;        // earliest expected finish
   const DUCK_W = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--duck-w')) || 72;
 
   const lanesEl = document.getElementById('lanes');
@@ -268,7 +279,6 @@
   const rankBtn  = document.getElementById('rankBtn');
   const statusEl = document.getElementById('status');
   const resultEl = document.getElementById('result');
-  const stageEl  = document.getElementById('stage');
 
   // modal refs
   const rankModal = document.getElementById('rankModal');
@@ -279,7 +289,6 @@
   let ducks = [];
   let rafId = null;
   let startTime = 0;
-  let winner = null;
   let distancePx = 0;
 
   function buildTrack(){
@@ -307,7 +316,7 @@
         el: duck,
         x: 0,
         speed: 0,
-        targetTime: null, // << store target time for ranking
+        targetTime: null, // planned finish time (for ordering fallback)
         finished: false,
         finishTime: null,
       });
@@ -319,7 +328,7 @@
     const pad = parseFloat(getComputedStyle(lanesEl).paddingLeft) || 12;
     const lanesRect = lanesEl.getBoundingClientRect();
     const finishRect = finishEl.getBoundingClientRect();
-    distancePx = (finishRect.left - lanesRect.left) - pad - DUCK_W - 6;
+    distancePx = (finishRect.left - lanesRect.left) - pad - DUCK_W - 6; // 6px from line
   }
 
   function duckSVG(){
@@ -346,7 +355,6 @@
 
   function reset(){
     cancelAnimationFrame(rafId);
-    winner = null;
     raceState = 'idle';
     statusEl.textContent = 'Ready';
     resultEl.classList.remove('show');
@@ -361,7 +369,7 @@
 
     startBtn.disabled = false;
     resetBtn.disabled = true;
-    hideRanking(); // pastikan modal ketutup kalau ada
+    hideRanking();
   }
 
   function startRace(){
@@ -369,9 +377,9 @@
     calcDistance();
 
     ducks.forEach(d => {
-      const tf = rand(MIN_FINISH_S, MAX_RACE_S);   // seconds
-      d.targetTime = tf;                           // simpan untuk ranking
-      d.speed = distancePx / tf;                   // px/s
+      const tf = rand(MIN_FINISH_S, MAX_RACE_S); // seconds
+      d.targetTime = tf;
+      d.speed = distancePx / tf;                 // px/s
       d.x = 0; d.finished = false; d.finishTime = null;
       d.el.querySelector('svg').style.animationDelay = `${rand(0,0.8).toFixed(2)}s`;
     });
@@ -381,7 +389,7 @@
     startBtn.disabled = true;
     resetBtn.disabled = true;
     rankBtn.disabled = true;
-    statusEl.textContent = 'Racing… 0.00s';
+    statusEl.textContent = 'Racing… 0.00s • 0/'+LANES+' finished';
     resultEl.classList.remove('show');
 
     rafId = requestAnimationFrame(tick);
@@ -399,23 +407,30 @@
 
       if(d.x >= distancePx && !d.finished){
         d.finished = true;
-        d.finishTime = Math.min(elapsed, MAX_RACE_S);
-        if(!winner){
-          winner = d;
-          endRace('winner');
-        }
+        d.finishTime = elapsed;
+        // optional: freeze winner pose only saat endRace
       }
     });
 
-    if(!winner){
-      statusEl.textContent = `Racing… ${elapsed.toFixed(2)}s`;
+    const finishedCount = ducks.reduce((n,d)=>n + (d.finished?1:0), 0);
+    statusEl.textContent = `Racing… ${elapsed.toFixed(2)}s • ${finishedCount}/${LANES} finished`;
+
+    // Semua bebek sudah finish -> END
+    if(finishedCount === LANES){
+      endRace('all-finished');
+      return;
     }
 
-    if(elapsed >= MAX_RACE_S && !winner){
-      const leader = [...ducks].sort((a,b)=>b.x - a.x)[0];
-      leader.finished = true;
-      leader.finishTime = MAX_RACE_S;
-      winner = leader;
+    // Cap waktu habis -> paksakan sisa bebek finish di garis
+    if(elapsed >= MAX_RACE_S){
+      ducks.forEach(d=>{
+        if(!d.finished){
+          d.finished = true;
+          d.finishTime = elapsed;        // cap time
+          d.x = distancePx;
+          d.el.style.setProperty('--x', `${d.x}px`);
+        }
+      });
       endRace('timecap');
       return;
     }
@@ -427,32 +442,32 @@
     raceState = 'done';
     cancelAnimationFrame(rafId);
 
+    // Pause bobbing semua agar “freeze” di hasil
     ducks.forEach(d=>{
       const svg = d.el.querySelector('svg');
-      svg.style.animationPlayState = (d === winner) ? 'paused' : 'running';
+      svg.style.animationPlayState = 'paused';
     });
 
+    // Tentukan winner berdasarkan finishTime terkecil
+    const winner = [...ducks].sort((a,b)=>a.finishTime - b.finishTime)[0];
     const timeStr = winner.finishTime.toFixed(2).replace(/\.00$/,'');
-    statusEl.textContent = `Winner: Duck #${winner.id} • ${timeStr}s`;
+    statusEl.textContent = `${reason==='all-finished' ? 'All finished.' : 'Time capped.'} Winner: Duck #${winner.id} • ${timeStr}s`;
     resultEl.classList.add('show');
     resultEl.textContent = `🏆 Duck #${winner.id} wins in ${timeStr}s ${reason==='timecap' ? '(time cap)' : ''}!`;
     resetBtn.disabled = false;
     rankBtn.disabled = false;
 
-    // === Tampilkan popup ranking otomatis ===
+    // Tampilkan popup ranking setelah semua selesai
     buildAndShowRanking();
   }
 
   function rand(min, max){ return Math.random() * (max - min) + min; }
 
-  // ===== Ranking Popup =====
+  /* ===== Ranking ===== */
   function buildRankingData(){
-    // gunakan finishTime jika ada; fallback ke targetTime agar semua punya waktu
-    return ducks.map(d => ({
-      id: d.id,
-      time: (d.finishTime ?? d.targetTime ?? MAX_RACE_S),
-      finished: d.finishTime != null
-    })).sort((a,b)=>a.time - b.time)
+    return ducks
+      .map(d => ({ id: d.id, time: d.finishTime ?? d.targetTime ?? MAX_RACE_S, finished: d.finishTime != null }))
+      .sort((a,b)=>a.time - b.time)
       .map((row, idx)=>({
         pos: idx+1,
         id: row.id,
@@ -486,7 +501,7 @@
   // Controls
   startBtn.addEventListener('click', startRace);
   resetBtn.addEventListener('click', reset);
-  rankBtn.addEventListener('click', ()=>{ buildAndShowRanking(); });
+  rankBtn.addEventListener('click', buildAndShowRanking);
 
   // Modal handlers
   closeRank.addEventListener('click', hideRanking);
