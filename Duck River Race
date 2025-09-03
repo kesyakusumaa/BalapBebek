@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Balap Bebek Sungai</title>
+  <title>Balap Bebek Tepi Sungai</title>
   <link rel="icon" type="image/png" href="https://i.ibb.co/PZZpsKgP/DUCK.png" />
   <style>
     :root{
@@ -190,7 +190,7 @@
 <body>
   <div class="app card">
     <header>
-      <h1>🐤Duck River Race</h1>
+      <h1>🐤Balap Bebek Tepi Sungai</h1>
       <div class="badge">10 ducks • 10s max</div>
     </header>
 
