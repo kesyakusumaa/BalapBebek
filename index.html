@@ -8,7 +8,7 @@
   :root{
     --river-h: 800px;
     --lanes: 10;
-    --lane-h: 56px; /* tinggi tiap jalur */
+    --lane-h: 40x; /* tinggi tiap jalur */
     --river-h: calc(var(--lane-h) * var(--lanes));
     --bank-h: 80px;
     --pad: 18px;
@@ -311,13 +311,16 @@
   }
 
   /* Lane numbers */
-  .lane .num{
-    position:absolute;
-    left:4px; top:6px;
-    font-size: 12px;
-    font-weight:800;
-    color:#083b6b80;
-    user-select:none;
+  .lane .num {
+  position: absolute;
+  left: 4px;
+  top: 50%;                     /* sejajarkan ke tengah */
+  transform: translateY(-50%);  /* biar benar-benar di tengah */
+  font-size: 14px;
+  font-weight: 700;
+  color: #083b6b;
+  opacity: 0.7;
+  user-select: none;
   }
 
   /* Result banner */
