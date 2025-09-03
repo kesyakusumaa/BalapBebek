@@ -1,296 +1,472 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Virtual Cockfighting Game - Enhanced Effects</title>
-  <style>
-    body { margin: 0; overflow: hidden; background: #222; }
-    #ui {
-      position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-      z-index: 10; background: rgba(0,0,0,0.7); color: #fff; padding: 20px; border-radius: 10px;
-      text-align: center;
-    }
-    .btn { margin: 10px; padding: 10px 20px; font-size: 18px; border: none; border-radius: 5px; cursor: pointer;}
-    .btn-blue { background: #2980f2; color: #fff; }
-    .btn-red { background: #e74c3c; color: #fff; }
-    .health-bar {
-      width: 120px; height: 18px; background: #444; border-radius: 8px; overflow: hidden;
-      margin: 8px auto;
-      box-shadow: 0 0 6px #000;
-      position: relative;
-    }
-    .health-fill {
-      height: 100%; border-radius: 8px;
-      transition: width 0.4s, background 0.2s;
-    }
-    .flash { animation: flash 0.3s; }
-    @keyframes flash {
-      0% { background: #ff0000; }
-      100% { background: inherit; }
-    }
-    #result {
-      font-size: 2em; color: yellow; margin-top: 20px;
-      text-shadow: 2px 2px 8px #000;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Duck River Race — Final (GitHub)</title>
+<style>
+  :root{
+    --bg:#0b1d3a;
+    --panel:#101826;
+    --accent:#ffd166;
+    --text:#eaf2ff;
+    --grass1:#2e7d32;
+    --grass2:#1b5e20;
+  }
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1100px;margin:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  h1{font-size:clamp(22px,3vw,32px);margin:0;letter-spacing:.5px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap}
+  button{
+    background:var(--accent);color:#1b1b1b;border:none;padding:10px 14px;border-radius:10px;
+    font-weight:700;cursor:pointer;box-shadow:0 4px 0 #caa94f;transition:transform .1s,opacity .2s;
+  }
+  button:hover{transform:translateY(-1px)}
+  button.secondary{background:#2b3750;color:#dbe8ff;box-shadow:none;border:1px solid #3d4a66}
+  button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .board{
+    background:var(--panel);border:1px solid #2a3550;border-radius:14px;padding:12px 14px;
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap
+  }
+  .stat{opacity:.9}
+  .banner{text-align:center;font-weight:800;letter-spacing:.5px}
+  .winner{color:#00e58f}
+  canvas{
+    width:100%;height:auto;display:block;border-radius:14px;border:1px solid #203356;
+    box-shadow:0 10px 24px rgba(0,0,0,.35)
+  }
+  /* Countdown Overlay */
+  .overlay{
+    position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.45);backdrop-filter:blur(3px);z-index:5;
+  }
+  .overlay.show{display:flex}
+  .count{
+    font-size:clamp(42px,8vw,108px);font-weight:900;letter-spacing:2px;
+    padding:10px 24px;border-radius:16px;background:rgba(16,24,38,.8);
+    border:1px solid #2a3550;box-shadow:0 12px 30px rgba(0,0,0,.4);
+  }
+</style>
 </head>
 <body>
-<div id="ui">
-  <div id="choose">
-    <h2>Choose Your Chicken</h2>
-    <button class="btn btn-blue" onclick="selectChicken('blue')">Blue Chicken</button>
-    <button class="btn btn-red" onclick="selectChicken('red')">Red Chicken</button>
-  </div>
-  <div id="fightui" style="display:none;">
-    <div>
-      <span>Blue Chicken</span>
-      <div class="health-bar"><div class="health-fill" id="blueHealth" style="background:#2980f2;width:100%"></div></div>
+  <div class="wrap">
+    <header>
+      <h1>Duck River Race</h1>
+      <div class="controls">
+        <button id="startBtn">Start Race</button>
+        <button id="pauseBtn" class="secondary" disabled>Pause</button>
+        <button id="resetBtn" class="secondary" disabled>Reset</button>
+      </div>
+    </header>
+
+    <div class="board">
+      <div class="stat">Finish Line at right side. Press <b>Start Race</b> to begin. First duck to cross wins!</div>
+      <div id="status" class="banner">Ready…</div>
     </div>
-    <div>
-      <span>Red Chicken</span>
-      <div class="health-bar"><div class="health-fill" id="redHealth" style="background:#e74c3c;width:100%"></div></div>
-    </div>
-    <div id="result"></div>
+
+    <canvas id="race" width="1200" height="700" aria-label="Duck racing river canvas"></canvas>
   </div>
-</div>
-<canvas id="game"></canvas>
-<script src="https://unpkg.com/three@0.148.0/build/three.min.js"></script>
+
+  <!-- Countdown overlay -->
+  <div id="overlay" class="overlay" aria-hidden="true">
+    <div id="count" class="count">3</div>
+  </div>
+
 <script>
-let selected = null, fighting = false;
-let blueHealth = 100, redHealth = 100;
-let blueObj, redObj, scene, camera, renderer, animID;
-const canvas = document.getElementById('game');
-let shakeTimeout = null;
+(() => {
+  const canvas = document.getElementById('race');
+  const ctx = canvas.getContext('2d');
 
-function selectChicken(color) {
-  selected = color;
-  document.getElementById('choose').style.display = 'none';
-  document.getElementById('fightui').style.display = '';
-  startGame();
-}
+  // Controls & UI
+  const statusEl = document.getElementById('status');
+  const startBtn = document.getElementById('startBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const resetBtn = document.getElementById('resetBtn');
 
-function startGame() {
-  // 3D Scene setup
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
-  camera.position.set(0, 3, 10);
-  renderer = new THREE.WebGLRenderer({canvas, antialias:true});
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  const overlay = document.getElementById('overlay');
+  const countEl = document.getElementById('count');
 
-  // Arena
-  const floor = new THREE.Mesh(
-    new THREE.CircleGeometry(6, 32),
-    new THREE.MeshStandardMaterial({color:0xaaaa88, roughness:0.7})
-  );
-  floor.rotation.x = -Math.PI/2;
-  scene.add(floor);
+  // Hi-DPI scaling
+  let scale = 1;
+  function fitHiDPI() {
+    const ratio = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+    const cssW = canvas.clientWidth;
+    const cssH = Math.round(cssW * (canvas.height / canvas.width));
+    canvas.style.height = cssH + 'px';
+    canvas.width = cssW * ratio;
+    canvas.height = cssH * ratio;
+    scale = ratio;
+  }
+  fitHiDPI();
+  window.addEventListener('resize', () => {
+    fitHiDPI();
+    generateScenery();
+    draw();
+  });
 
-  // Lighting
-  const light = new THREE.DirectionalLight(0xffffff, 1);
-  light.position.set(5,10,7);
-  scene.add(light);
-  scene.add(new THREE.AmbientLight(0x999999));
+  // Settings
+  const DUCK_COUNT = 10;
+  const margin = 60;
+  const finishOffset = 110;
+  const riverPadding = 20;
 
-  // Chickens (replace with models if available)
-  const blueMat = new THREE.MeshStandardMaterial({color:0x2980f2});
-  const redMat = new THREE.MeshStandardMaterial({color:0xe74c3c});
+  const colors = [
+    '#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6',
+    '#16a085','#f1c40f','#e84393','#8e6e53','#1abc9c'
+  ];
 
-  blueObj = new THREE.Mesh(new THREE.BoxGeometry(1,1.5,1), blueMat);
-  blueObj.position.set(-2,0.75,0);
+  // State
+  const ducks = [];
+  let running = false;    // true = race time is flowing (after GO)
+  let paused = false;
+  let winner = null;
+  let lastTime = 0;
 
-  const blueScarf = new THREE.Mesh(new THREE.TorusGeometry(0.55,0.12,16,32), 
-    new THREE.MeshStandardMaterial({color:0x0a5eea}));
-  blueScarf.position.set(0,0.7,0);
-  blueScarf.rotation.x = Math.PI/2;
-  blueObj.add(blueScarf);
+  let countdownTimer = null; // handle for countdown
+  let countingDown = false;  // prevents double-start
 
-  redObj = new THREE.Mesh(new THREE.BoxGeometry(1,1.5,1), redMat);
-  redObj.position.set(2,0.75,0);
+  // Scenery
+  let trees = [];
+  let rocks = [];
 
-  const redScarf = new THREE.Mesh(new THREE.TorusGeometry(0.55,0.12,16,32), 
-    new THREE.MeshStandardMaterial({color:0xc21818}));
-  redScarf.position.set(0,0.7,0);
-  redScarf.rotation.x = Math.PI/2;
-  redObj.add(redScarf);
+  function rand(min,max){ return Math.random()*(max-min)+min; }
+  function pseudoNoise(t){ return Math.sin(t*1.3)*0.6 + Math.sin(t*0.7+2.13)*0.4; }
 
-  scene.add(blueObj); scene.add(redObj);
+  function resetRace() {
+    ducks.length = 0;
+    winner = null;
+    running = false;
+    paused = false;
+    countingDown = false;
+    lastTime = performance.now();
 
-  fighting = true;
-  blueHealth = 100; redHealth = 100;
-  updateHealth();
-  animate();
-  setTimeout(fightTurn, 1200);
-}
+    // buttons state
+    startBtn.disabled = false;
+    pauseBtn.disabled = true;
+    resetBtn.disabled = true;
+    pauseBtn.textContent = 'Pause';
+    statusEl.textContent = 'Ready…';
 
-function animate() {
-  animID = requestAnimationFrame(animate);
-  blueObj.rotation.y += 0.01;
-  redObj.rotation.y -= 0.01;
-  renderer.render(scene, camera);
-}
+    const W = canvas.width / scale;
+    const H = canvas.height / scale;
+    const riverTop = margin;
+    const riverBot = H - margin;
+    const riverH = riverBot - riverTop;
+    const laneH = riverH / DUCK_COUNT;
 
-function fightTurn() {
-  if (!fighting) return;
-  let attacker, defender, attackerObj, defenderObj;
-  if (Math.random() > 0.5) {
-    attacker = 'blue'; defender = 'red';
-    attackerObj = blueObj; defenderObj = redObj;
-  } else {
-    attacker = 'red'; defender = 'blue';
-    attackerObj = redObj; defenderObj = blueObj;
+    for (let i=0;i<DUCK_COUNT;i++){
+      const y = riverTop + laneH*(i+0.5);
+      const base = rand(90,120);
+      const jitter = rand(20,40);
+      ducks.push({
+        id: i+1,
+        color: colors[i%colors.length],
+        x: margin + 10,
+        y,
+        baseSpeed: base,
+        jitter: jitter,
+        noiseT: Math.random()*1000
+      });
+    }
+    generateScenery();
+    draw();
   }
 
-  let origZ = attackerObj.position.z;
-  let origY = attackerObj.position.y;
-  // Lunge and shake
-  attackerObj.position.z -= 0.7;
-  shakeObject(attackerObj, 100, 0.15);
-  setTimeout(()=>{
-    attackerObj.position.z = origZ;
-    // Damage
-    let dmg = Math.floor(Math.random()*20+15);
-    if (defender === 'red') redHealth -= dmg;
-    else blueHealth -= dmg;
-    showBlood(defenderObj, dmg, true);
-    updateHealth(defender);
+  function generateScenery(){
+    const W = canvas.width / scale;
+    const H = canvas.height / scale;
 
-    // Health bar flash
-    let healthBarId = defender === 'red' ? 'redHealth' : 'blueHealth';
-    let bar = document.getElementById(healthBarId);
-    bar.classList.add('flash');
-    setTimeout(()=>bar.classList.remove('flash'), 300);
+    const usableLeft = riverPadding + 20;
+    const usableRight = W - riverPadding - 40;
+    const bankTopYMin = 18, bankTopYMax = Math.max(22, margin - 12);
+    const bankBotYMin = H - margin + 12, bankBotYMax = H - 18;
 
-    // Screen shake effect
-    screenShake(200, 10);
-
-    // Dramatic death if health below zero
-    checkWinner();
-    if (fighting) setTimeout(fightTurn, 900);
-  }, 340);
-}
-
-function shakeObject(obj, duration, magnitude) {
-  let time = 0;
-  let shakeInt = setInterval(() => {
-    obj.position.x += (Math.random()-0.5)*magnitude;
-    obj.position.y += (Math.random()-0.5)*magnitude;
-    time += 20;
-    if (time >= duration) {
-      obj.position.x = Math.round(obj.position.x);
-      obj.position.y = Math.round(obj.position.y);
-      clearInterval(shakeInt);
+    // Trees
+    trees = [];
+    for (let i=0;i<10;i++){
+      trees.push({ x: rand(usableLeft, usableRight), y: rand(bankTopYMin, bankTopYMax), s: rand(0.8,1.2) });
+      trees.push({ x: rand(usableLeft, usableRight), y: rand(bankBotYMin, bankBotYMax), s: rand(0.8,1.2) });
     }
-  }, 20);
-}
-
-function screenShake(duration, magnitude) {
-  let time = 0;
-  let origStyle = canvas.style.transform;
-  if (shakeTimeout) clearTimeout(shakeTimeout);
-  let shakeInt = setInterval(() => {
-    canvas.style.transform = `translate(${(Math.random()-0.5)*magnitude}px, ${(Math.random()-0.5)*magnitude}px)`;
-    time += 20;
-    if (time >= duration) {
-      clearInterval(shakeInt);
-      canvas.style.transform = origStyle;
-    }
-  }, 20);
-  shakeTimeout = setTimeout(()=>{canvas.style.transform = origStyle;}, duration+20);
-}
-
-function showBlood(obj, amount, splatter) {
-  for (let i=0; i<Math.floor(amount/10); i++) {
-    const blood = new THREE.Mesh(
-      new THREE.SphereGeometry(0.07, 8, 8),
-      new THREE.MeshStandardMaterial({color:0xb80000, roughness:0.7, transparent:true, opacity:0.8})
-    );
-    blood.position.copy(obj.position);
-    blood.position.x += (Math.random()-0.5)*0.6;
-    blood.position.y += (Math.random())*1.1;
-    blood.position.z += (Math.random()-0.5)*0.2;
-    scene.add(blood);
-    setTimeout(()=>scene.remove(blood), 1200);
-    // Splatter effect: "throw" blood up
-    if (splatter) {
-      let upward = (Math.random()*0.5)+0.2;
-      let bloodInt = setInterval(()=> {
-        blood.position.y += upward;
-        upward -= 0.05;
-        if (upward <= 0) clearInterval(bloodInt);
-      }, 60);
+    // Rocks
+    rocks = [];
+    for (let i=0;i<8;i++){
+      rocks.push({ x: rand(usableLeft, usableRight), y: rand(bankTopYMin, bankTopYMax), s: rand(0.7,1.3) });
+      rocks.push({ x: rand(usableLeft, usableRight), y: rand(bankBotYMin, bankBotYMax), s: rand(0.7,1.3) });
     }
   }
-}
 
-function updateHealth(damaged) {
-  document.getElementById('blueHealth').style.width = Math.max(0, blueHealth) + '%';
-  document.getElementById('redHealth').style.width = Math.max(0, redHealth) + '%';
-}
+  // Drawing
+  function drawBanks(){
+    const W = canvas.width / scale;
+    const H = canvas.height / scale;
 
-function checkWinner() {
-  if (redHealth <= 0 || blueHealth <= 0) {
-    fighting = false;
-    cancelAnimationFrame(animID);
-    let winner, loserObj, winnerObj;
-    if (redHealth > blueHealth) {
-      winner = "Red Chicken Wins!";
-      loserObj = blueObj; winnerObj = redObj;
-    } else if (blueHealth > redHealth) {
-      winner = "Blue Chicken Wins!";
-      loserObj = redObj; winnerObj = blueObj;
-    } else {
-      winner = "It's a Draw!";
-    }
-    document.getElementById('result').innerText = winner;
-    // Death effect
-    if (loserObj) chickenDeath(loserObj);
-    if (winnerObj) chickenVictory(winnerObj);
-    setTimeout(()=>location.reload(), 4000); // restart game
+    const gTop = ctx.createLinearGradient(0, 0, 0, margin);
+    gTop.addColorStop(0, 'var(--grass1)');
+    gTop.addColorStop(1, 'var(--grass2)');
+    ctx.fillStyle = gTop;
+    ctx.fillRect(0, 0, W, margin);
+
+    const gTopLight = ctx.createLinearGradient(0, 0, 0, margin);
+    gTopLight.addColorStop(0, 'rgba(255,255,255,0.05)');
+    gTopLight.addColorStop(1, 'rgba(0,0,0,0.0)');
+    ctx.fillStyle = gTopLight;
+    ctx.fillRect(0, 0, W, margin);
+
+    const gBot = ctx.createLinearGradient(0, H-margin, 0, H);
+    gBot.addColorStop(0, 'var(--grass2)');
+    gBot.addColorStop(1, 'var(--grass1)');
+    ctx.fillStyle = gBot;
+    ctx.fillRect(0, H-margin, W, margin);
   }
-}
 
-function chickenDeath(obj) {
-  // Rotate and fade
-  let rot = 0;
-  let fade = 1;
-  let deathInt = setInterval(()=>{
-    rot += 0.08;
-    obj.rotation.z = rot;
-    fade -= 0.04;
-    obj.material.opacity = Math.max(fade, 0);
-    obj.material.transparent = true;
-    if (fade <= 0) {
-      clearInterval(deathInt);
-      obj.visible = false;
-    }
-  }, 60);
-}
-
-function chickenVictory(obj) {
-  // Victory dance: bounce up and down
-  let up = true;
-  let danceCount = 0;
-  let origY = obj.position.y;
-  let danceInt = setInterval(()=>{
-    if (up) obj.position.y += 0.15;
-    else obj.position.y -= 0.15;
-    up = !up;
-    danceCount++;
-    if (danceCount > 8) {
-      obj.position.y = origY;
-      clearInterval(danceInt);
-    }
-  }, 120);
-}
-
-// Responsive canvas
-window.addEventListener('resize', ()=>{
-  if (renderer && camera) {
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+  function drawTree(x,y,s=1){
+    ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+    ctx.fillStyle = '#7b4f2f'; ctx.fillRect(-6,-8,12,18);
+    ctx.fillStyle = '#2ecc71';
+    ctx.beginPath(); ctx.arc(0,-22,16,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-12,-16,14,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(12,-16,14,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.beginPath(); ctx.arc(-4,-24,8,0,Math.PI*2); ctx.fill();
+    ctx.restore();
   }
-});
+  function drawRock(x,y,s=1){
+    ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+    ctx.beginPath(); ctx.ellipse(0,0,18,12,0,0,Math.PI*2);
+    const g = ctx.createRadialGradient(-6,-4,1,0,0,20);
+    g.addColorStop(0, '#c9d1d9'); g.addColorStop(1, '#6b7b8a'); ctx.fillStyle = g; ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath(); ctx.ellipse(0,9,20,6,0,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  function drawScenery(){
+    for (const t of trees) drawTree(t.x,t.y,t.s);
+    for (const r of rocks) drawRock(r.x,r.y,r.s);
+  }
+
+  function drawRiverBase(){
+    const W = canvas.width / scale;
+    const H = canvas.height / scale;
+    const g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#0b3a63'); g.addColorStop(1,'#0c5f8e');
+    ctx.fillStyle = g;
+    ctx.fillRect(riverPadding, margin, W - riverPadding*2, H - margin*2);
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(riverPadding, margin, W - riverPadding*2, H - margin*2);
+  }
+  function drawWaves(t){
+    const W = canvas.width / scale;
+    const H = canvas.height / scale;
+    const x0 = riverPadding, x1 = W - riverPadding;
+    const y0 = margin, y1 = H - margin;
+    const waterH = y1 - y0;
+
+    // broad waves
+    for (let i=0;i<6;i++){
+      const y = y0 + (i+0.5)/6 * waterH;
+      ctx.beginPath();
+      for (let x=x0;x<=x1;x+=8){
+        const k = 0.025 + i*0.002, amp = 3 + i*0.5;
+        const yWave = y + Math.sin(x*k + t*0.9 + i)*amp;
+        if (x===x0) ctx.moveTo(x,yWave); else ctx.lineTo(x,yWave);
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1.5; ctx.stroke();
+    }
+    // fine ripples
+    for (let i=0;i<10;i++){
+      const y = y0 + (i+0.3)/10 * waterH;
+      ctx.beginPath();
+      for (let x=x0;x<=x1;x+=10){
+        const k = 0.05 + i*0.003, amp = 1.5 + (i%3)*0.4;
+        const yWave = y + Math.sin((x*k) - t*1.3 + i*0.7)*amp;
+        if (x===x0) ctx.moveTo(x,yWave); else ctx.lineTo(x,yWave);
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineWidth = 1; ctx.stroke();
+    }
+  }
+  function drawLanesAndFinish(){
+    const W = canvas.width / scale;
+    const H = canvas.height / scale;
+    const laneH = (H - margin*2) / DUCK_COUNT;
+
+    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    for (let i=1;i<DUCK_COUNT;i++){
+      const y = margin + laneH*i;
+      ctx.beginPath(); ctx.moveTo(riverPadding,y); ctx.lineTo(W-riverPadding,y); ctx.stroke();
+    }
+    const finishX = W - finishOffset;
+    for (let y=margin; y<H-margin; y+=12){
+      ctx.fillStyle = (Math.floor(y/12)%2===0) ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.65)';
+      ctx.fillRect(finishX, y, 12, 8);
+    }
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.fillRect(finishX-3, margin, 3, H-margin*2);
+  }
+  function roundRect(x,y,w,h,r,fill){
+    const rr = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+rr,y);
+    ctx.arcTo(x+w,y, x+w,y+h, rr);
+    ctx.arcTo(x+w,y+h, x,y+h, rr);
+    ctx.arcTo(x,y+h, x,y, rr);
+    ctx.arcTo(x,y, x+w,y, rr);
+    if (fill) ctx.fill();
+  }
+  function drawDuck(d, t){
+    const bodyL=80, bodyH=32, headR=16;
+    const bob = Math.sin(t*2 + d.id)*2;
+    ctx.save(); ctx.translate(d.x, d.y + bob);
+    // wake
+    ctx.beginPath(); ctx.ellipse(-20, bodyH/2 + 8, 22, 6, 0, 0, Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.12)'; ctx.fill();
+    // body
+    ctx.fillStyle = d.color;
+    roundRect(-bodyL/2, -bodyH/2, bodyL, bodyH, 14, true);
+    // head
+    ctx.beginPath();
+    ctx.arc(bodyL/2 - 12, -bodyH/2 + headR - 4, headR, 0, Math.PI*2);
+    ctx.fill();
+    // beak
+    ctx.beginPath();
+    const bx = bodyL/2 + 2, by = -bodyH/2 + headR - 4;
+    ctx.moveTo(bx, by); ctx.lineTo(bx+16, by-6); ctx.lineTo(bx+16, by+6); ctx.closePath();
+    ctx.fillStyle='#ffb703'; ctx.fill();
+    // eye
+    ctx.beginPath(); ctx.arc(bodyL/2 - 4, -bodyH/2 + headR - 10, 3.5, 0, Math.PI*2);
+    ctx.fillStyle='#101010'; ctx.fill();
+    // number badge
+    ctx.beginPath(); ctx.ellipse(0,0,18,18,0,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,0,0,0.45)'; ctx.fill();
+    ctx.font='bold 16px system-ui,Segoe UI,Roboto';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='#fff'; ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.lineWidth=3;
+    ctx.strokeText(String(d.id),0,0); ctx.fillText(String(d.id),0,0);
+    ctx.restore();
+  }
+
+  // Race logic
+  const startClock = { t0:0, now:0 };
+  function raceTime(){ return (startClock.now - startClock.t0)/1000; }
+
+  function update(dt){
+    if (winner || !running || paused) return;
+    const W = canvas.width / scale;
+    const finishX = W - finishOffset;
+
+    for (const d of ducks){
+      d.noiseT += dt*0.0015;
+      const n = pseudoNoise(d.noiseT);
+      const pxPerSec = d.baseSpeed + n*d.jitter;
+      const dx = Math.max(30, pxPerSec) * dt;
+      d.x += dx/1000;
+
+      const front = d.x + 80/2;
+      if (!winner && front >= finishX){
+        winner = d;
+        running = false;
+        pauseBtn.disabled = true; // lock controls after finish
+        startBtn.disabled = false;
+        resetBtn.disabled = false;
+        statusEl.innerHTML = `<span class="winner">Duck #${d.id} wins!</span> Time: ${raceTime().toFixed(2)}s — Press <b>Start</b> to race again.`;
+        break;
+      }
+    }
+  }
+
+  function draw(){
+    ctx.setTransform(scale,0,0,scale,0,0);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    drawBanks();
+    drawScenery();
+    drawRiverBase();
+    drawWaves(performance.now()/1000);
+    drawLanesAndFinish();
+
+    const t = performance.now()/1000;
+    for (const d of ducks) drawDuck(d,t);
+  }
+
+  function loop(ts){
+    if (!lastTime) lastTime = ts;
+    const dt = ts - lastTime; lastTime = ts;
+
+    if (running && !paused && !winner){
+      startClock.now = ts;
+      update(dt);
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  // Countdown flow — race only starts after Start + countdown
+  function startCountdown(){
+    if (countingDown || running) return;
+    countingDown = true;
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden','false');
+    countEl.textContent = '3';
+
+    // lock buttons during countdown
+    startBtn.disabled = true;
+    pauseBtn.disabled = true;
+    resetBtn.disabled = true;
+
+    const steps = ['3','2','1','GO!'];
+    let i = 0;
+    countdownTimer = setInterval(() => {
+      countEl.textContent = steps[i++];
+      if (i === steps.length){
+        clearInterval(countdownTimer);
+        // small delay so "GO!" appears briefly
+        setTimeout(() => {
+          overlay.classList.remove('show');
+          overlay.setAttribute('aria-hidden','true');
+          beginRace();
+        }, 450);
+      }
+    }, 700);
+  }
+
+  function beginRace(){
+    // enable race time
+    running = true; paused = false; countingDown = false;
+    statusEl.textContent = 'Racing…';
+    startClock.t0 = performance.now(); startClock.now = startClock.t0;
+
+    // enable controls
+    pauseBtn.disabled = false;
+    resetBtn.disabled = false;
+  }
+
+  // Controls
+  startBtn.addEventListener('click', () => {
+    if (winner) resetRace();       // quick restart path
+    if (!countingDown && !running) startCountdown();
+  });
+
+  pauseBtn.addEventListener('click', () => {
+    if (!running) return;
+    paused = !paused;
+    pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+    statusEl.textContent = paused ? 'Paused.' : 'Racing…';
+  });
+
+  resetBtn.addEventListener('click', () => {
+    // cancel countdown if any
+    if (countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
+    overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true');
+    resetRace();
+  });
+
+  // Boot
+  resetRace();
+  requestAnimationFrame(loop);
+})();
 </script>
 </body>
 </html>
