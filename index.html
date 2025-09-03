@@ -7,7 +7,7 @@
 <style>
   :root{
     --river-h: 560px;
-    --lanes: 5;
+    --lanes: 10;
     --lane-h: calc((var(--river-h) - var(--pad) * 2) / var(--lanes));
     --bank-h: 80px;
     --pad: 18px;
@@ -405,7 +405,7 @@
 
 <script>
 (() => {
-  const LANES = 5;
+  const LANES = 10;
   const MAX_RACE_S = 10;           // hard cap of 10 seconds
   const MIN_FINISH_S = 7.0;        // random winner can finish as early as 7s
   const DUCK_W = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--duck-w')) || 72;
