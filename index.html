@@ -6,9 +6,10 @@
 <title>Duck River Race</title>
 <style>
   :root{
-    --river-h: 560px;
+    --river-h: 800px;
     --lanes: 10;
-    --lane-h: calc(var(--river-h) / var(--lanes));
+    --lane-h: 56px; /* tinggi tiap jalur */
+    --river-h: calc(var(--lane-h) * var(--lanes));
     --bank-h: 80px;
     --pad: 18px;
     --finish-w: 18px;
