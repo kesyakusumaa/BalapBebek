@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Duck River Race</title>
+<title>Balap Bebek Sungai</title>
 <link rel="icon" type="image/png" href="https://i.ibb.co/PZZpsKgP/DUCK.png" />
 <style>
   :root{
@@ -131,6 +131,29 @@
     :root{ --river-h: 520px; --bank-h: 70px; --duck-w: 64px; --duck-h: 40px; --pad: 12px; }
     .status{ min-width:unset }
   }
+  /* --- Winner glow & bounce --- */
+.duck.win {
+  filter: drop-shadow(0 0 10px rgba(255,215,0,.9)) drop-shadow(0 0 18px rgba(255,215,0,.6));
+}
+.duck.win svg {
+  animation: bob 1.2s ease-in-out infinite, winScale .9s ease-in-out infinite;
+}
+@keyframes winScale{
+  0%,100%{ transform: translateY(0) scale(1) }
+  50%{ transform: translateY(3px) scale(1.08) }
+}
+
+/* --- Modal pop-in --- */
+.modal-backdrop.show { display:flex; animation: fadeIn .18s ease-out; }
+.modal.anim-in { animation: popIn .18s ease-out; }
+@keyframes fadeIn { from{ opacity:0 } to{ opacity:1 } }
+@keyframes popIn { 0%{ transform: scale(.9); opacity:0 } 100%{ transform: scale(1); opacity:1 } }
+
+/* --- Confetti --- */
+.confetti {
+  position: fixed; width:8px; height:12px; pointer-events:none;
+  will-change: transform, opacity;
+}
 </style>
 </head>
 <body>
@@ -342,6 +365,74 @@
       <ellipse cx="76" cy="31.5" rx="6" ry="2" fill="#00000010"/>
     </svg>`;
   }
+  /* ===== Audio & FX ===== */
+let audioCtx = null;
+function ensureAudio(){
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch(e){ /* ignore */ }
+  }
+}
+
+function tone(freq=440, dur=0.15, when=0, type='sine', gain=0.08){
+  if(!audioCtx) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.value = gain;
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(audioCtx.currentTime + when);
+  o.stop(audioCtx.currentTime + when + dur);
+}
+
+function fanfare(){
+  if(!audioCtx) return;
+  // simple triad: C–E–G naik + “ta-daa”
+  const now = audioCtx.currentTime;
+  [[523,0],[659,0.05],[784,0.1]].forEach(([f,off])=>tone(f,0.24,off,'triangle',0.07));
+  // tail
+  tone(988,0.18,0.28,'square',0.06);
+  // “pop” noise-ish transient
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type='square'; o.frequency.value=160;
+  g.gain.setValueAtTime(0.05, now+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, now+0.14);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(now+0.02); o.stop(now+0.16);
+}
+
+function uiPop(){
+  // kecil aja buat modal
+  tone(880,0.06,0,'sine',0.05);
+  tone(1320,0.05,0.03,'sine',0.04);
+}
+
+/* ===== Confetti ===== */
+function spawnConfetti(x, y, count=40){
+  const colors = ['#fbbf24','#22c55e','#60a5fa','#f472b6','#ef4444','#a78bfa'];
+  for(let i=0;i<count;i++){
+    const el = document.createElement('div');
+    el.className = 'confetti';
+    el.style.left = `${x}px`;
+    el.style.top  = `${y}px`;
+    el.style.background = colors[i%colors.length];
+    el.style.transform = `translate(-50%,-50%) rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(el);
+
+    const dx = (Math.random()*2-1) * 180;
+    const dy = 220 + Math.random()*180;
+    const rot = (Math.random()*2-1)*720;
+    const dur = 800 + Math.random()*700;
+
+    el.animate([
+      { transform: `translate(-50%,-50%) translate(0px,0px) rotate(0deg)`, opacity:1 },
+      { transform: `translate(-50%,-50%) translate(${dx}px,${dy}px) rotate(${rot}deg)`, opacity:0.1 }
+    ], { duration: dur, easing:'cubic-bezier(.2,.6,.2,1)' });
+
+    setTimeout(()=> el.remove(), dur+50);
+  }
+}
 
   function reset(){
     cancelAnimationFrame(rafId);
@@ -426,21 +517,41 @@
   }
 
   function endRace(reason){
-    raceState = 'done';
-    cancelAnimationFrame(rafId);
+  raceState = 'done';
+  cancelAnimationFrame(rafId);
 
-    ducks.forEach(d=> d.el.querySelector('svg').style.animationPlayState = 'paused');
+  ducks.forEach(d=> d.el.querySelector('svg').style.animationPlayState = 'paused');
 
-    const winner = [...ducks].sort((a,b)=>a.finishTime - b.finishTime)[0];
-    const timeStr = winner.finishTime.toFixed(2).replace(/\.00$/,'');
-    statusEl.textContent = `${reason==='all-finished' ? 'All finished.' : 'Time capped.'} Winner: ${winner.name} • ${timeStr}s`;
-    resultEl.classList.add('show');
-    resultEl.textContent = `🏆 ${winner.name} wins in ${timeStr}s ${reason==='timecap' ? '(time cap)' : ''}!`;
-    resetBtn.disabled = false;
-    rankBtn.disabled = false;
+  const winner = [...ducks].sort((a,b)=>a.finishTime - b.finishTime)[0];
 
-    buildAndShowRanking();
+  /* === TAMBAHAN: efek juara (glow + fanfare + confetti) === */
+  if (winner && winner.el) {
+    // Glow & bounce
+    winner.el.classList.add('win');
+
+    // Suara fanfare (pastikan sebelumnya ada ensureAudio() saat Start)
+    if (typeof fanfare === 'function') fanfare();
+
+    // Confetti posisi dekat garis finish & bebek juara
+    const lanesRect  = lanesEl.getBoundingClientRect();
+    const finishRect = finishEl.getBoundingClientRect();
+    const duckRect   = winner.el.getBoundingClientRect();
+    const cx = finishRect.left - 6;                 // sedikit di kiri garis finish
+    const cy = duckRect.top + duckRect.height / 2;  // setinggi bebek
+    if (typeof spawnConfetti === 'function') spawnConfetti(cx, cy, 48);
   }
+  /* === END TAMBAHAN === */
+
+  const timeStr = winner.finishTime.toFixed(2).replace(/\.00$/,'');
+  statusEl.textContent = `${reason==='all-finished' ? 'All finished.' : 'Time capped.'} Winner: ${winner.name} • ${timeStr}s`;
+  resultEl.classList.add('show');
+  resultEl.textContent = `🏆 ${winner.name} wins in ${timeStr}s ${reason==='timecap' ? '(time cap)' : ''}!`;
+  resetBtn.disabled = false;
+  rankBtn.disabled = false;
+
+  buildAndShowRanking();
+}
+
 
   function rand(min, max){ return Math.random() * (max - min) + min; }
 
@@ -473,8 +584,17 @@
     showRanking();
   }
 
-  function showRanking(){ rankModal.style.display = 'flex'; }
-  function hideRanking(){ rankModal.style.display = 'none'; }
+  function showRanking(){
+  rankModal.classList.add('show'); // memicu fadeIn backdrop
+  const inner = rankModal.querySelector('.modal');
+  inner.classList.add('anim-in');
+  uiPop();
+}
+  function hideRanking(){
+  rankModal.classList.remove('show');
+  const inner = rankModal.querySelector('.modal');
+  inner.classList.remove('anim-in');
+}
 
   // Build once
   buildTrack();
@@ -482,6 +602,7 @@
 
   // Controls
 startBtn.addEventListener('click', ()=>{
+  ensureAudio(); // <- tambah ini agar WebAudio siap (butuh user gesture)
   const code = document.getElementById('codeInput').value.trim();
   if(code !== "THEREALHENDL"){
     alert("❌ Kode salah! Masukkan kode RAHASIA untuk memulai race.");
